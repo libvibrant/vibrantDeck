@@ -117,9 +117,9 @@ export default definePlugin((serverApi: ServerAPI) => {
 
   lifetimeHook = SteamClient.GameSessions.RegisterForAppLifetimeNotifications((update: any) => {
     if (update.bRunning) {
-      runningGames.push(update.nInstanceID);
+      runningGames.push(update.unAppID);
     } else {
-      const index: number = runningGames.indexOf(update.nInstanceID);
+      const index: number = runningGames.indexOf(update.unAppID);
       if (index >= 0)
         runningGames.splice(index, 1);
       else
