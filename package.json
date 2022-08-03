@@ -1,7 +1,7 @@
 {
-  "name": "decky-plugin-template",
+  "name": "vibrant-deck",
   "version": "0.0.1",
-  "description": "A template to quickly create decky plugins from scratch, based on TypeScript and webpack",
+  "description": "Set vibrancy (saturation) of your screen",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
     "watch": "rollup -c -w",
@@ -14,12 +14,14 @@
   "keywords": [
     "decky",
     "plugin",
-    "plugin-template",
+    "vibrant",
+    "x11",
+    "libvibrant",
     "steam-deck",
     "deck"
   ],
-  "author": "Jonas Dellinger <jonas@dellinger.dev>",
-  "license": "GPL-2.0-or-later",
+  "author": "Sefa Eyeoglu <contact@scrumplex.net>",
+  "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/SteamDeckHomebrew/decky-plugin-template/issues"
   },

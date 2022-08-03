@@ -1,10 +1,8 @@
 {
-  "name": "Example Plugin",
-  "author": "John Doe",
-  "flags": ["debug", "_root"],
+  "name": "vibrantDeck",
+  "author": "Scrumplex",
   "publish": {
-    "tags": ["template", "root"],
-    "description": "Decky example plugin.",
-    "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
+    "tags": ["vibrant", "saturation"],
+    "description": "Set vibrancy (saturation) of your screen"
   }
 }

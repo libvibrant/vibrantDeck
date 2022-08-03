@@ -1,105 +1,128 @@
 import {
-  ButtonItem,
   definePlugin,
-  DialogButton,
-  Menu,
-  MenuItem,
   PanelSection,
   PanelSectionRow,
-  Router,
+  SliderField,
   ServerAPI,
-  showContextMenu,
+  ToggleField,
   staticClasses,
 } from "decky-frontend-lib";
-import { VFC } from "react";
+import { VFC, useState, useEffect } from "react";
 import { FaShip } from "react-icons/fa";
 
-import logo from "../assets/logo.png";
+// Appease TypeScript
+declare var SteamClient: any;
 
-// interface AddMethodArgs {
-//   left: number;
-//   right: number;
-// }
+interface SaturationArgs {
+  saturation: number
+}
 
-const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
-  // const [result, setResult] = useState<number | undefined>();
+const keyInGameOnly = "vibrantDeck_inGameOnly";
+const keySaturation = "vibrantDeck_saturation";
+let lastInGameOnly: boolean = true;
+let lastSaturation: number = 100;
 
-  // const onClick = async () => {
-  //   const result = await serverAPI.callPluginMethod<AddMethodArgs, number>(
-  //     "add",
-  //     {
-  //       left: 2,
-  //       right: 2,
-  //     }
-  //   );
-  //   if (result.success) {
-  //     setResult(result.result);
-  //   }
-  // };
+let lifetimeHook: any = null;
+let runningGames: number[] = [];
+
+const applySaturation = (serverAPI: ServerAPI, saturation: number) => {
+  console.log("Applying saturation " + saturation.toString());
+  serverAPI.callPluginMethod<SaturationArgs, boolean>("set_saturation", {"saturation": saturation / 100.0});
+};
+
+const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
+  const [currentInGameOnly, setCurrentInGameOnly] = useState<boolean>(lastInGameOnly);
+  const [currentSaturation, setCurrentSaturation] = useState<number>(lastSaturation);
+
+  useEffect(() => {
+    console.log("Setting inGameOnly " + currentInGameOnly.toString());
+    lastInGameOnly = currentInGameOnly;
+    localStorage.setItem(keyInGameOnly, currentInGameOnly);
+  }, [currentInGameOnly]);
+
+  useEffect(() => {
+    console.log("Setting saturation " + currentSaturation.toString());
+    lastSaturation = currentSaturation;
+    localStorage.setItem(keySaturation, currentSaturation);
+  }, [currentSaturation]);
 
   return (
-    <PanelSection title="Panel Section">
+    <PanelSection title="Control">
       <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={(e) =>
-            showContextMenu(
-              <Menu label="Menu" cancelText="CAAAANCEL" onCancel={() => {}}>
-                <MenuItem onSelected={() => {}}>Item #1</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #2</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #3</MenuItem>
-              </Menu>,
-              e.currentTarget ?? window
-            )
-          }
-        >
-          Server says yolo
-        </ButtonItem>
-      </PanelSectionRow>
+        <ToggleField
+          label="In-Game only"
+          description="Only apply saturation while a game is running"
+          checked={currentInGameOnly}
+          onChange={(inGameOnly) => {
+            setCurrentInGameOnly(inGameOnly);
 
-      <PanelSectionRow>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <img src={logo} />
-        </div>
-      </PanelSectionRow>
-
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={() => {
-            Router.CloseSideMenus();
-            Router.Navigate("/decky-plugin-test");
+            // apply target saturation, if in-game-only is off, or if we are in a game either way
+            applySaturation(serverAPI, !inGameOnly || runningGames.length > 0 ? currentSaturation : 100);
           }}
-        >
-          Router
-        </ButtonItem>
+        />
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <SliderField
+          label="Saturation"
+          description="Control the saturation of the display"
+          value={currentSaturation}
+          step={5}
+          max={400}
+          min={0}
+          showValue={true}
+          onChange={(saturation: number) => {
+            setCurrentSaturation(saturation);
+
+            // apply target saturation, if in-game-only is off, or if we are in a game either way
+            if (!currentInGameOnly || runningGames.length > 0)
+              applySaturation(serverAPI, saturation);
+          }}
+        />
       </PanelSectionRow>
     </PanelSection>
   );
 };
 
-const DeckyPluginRouterTest: VFC = () => {
-  return (
-    <div style={{ marginTop: "50px", color: "white" }}>
-      Hello World!
-      <DialogButton onClick={() => Router.NavigateToStore()}>
-        Go to Store
-      </DialogButton>
-    </div>
-  );
-};
-
 export default definePlugin((serverApi: ServerAPI) => {
-  serverApi.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
-    exact: true,
+  // load settings
+  const localInGameOnly = localStorage.getItem(keyInGameOnly);
+  const localSaturation = localStorage.getItem(keySaturation);
+
+  if (localInGameOnly != null)
+    lastInGameOnly = localInGameOnly == "true";
+  try {
+    if (localSaturation != null)
+      lastSaturation = parseInt(localSaturation);
+  } catch {}
+
+  console.debug(`Initial settings inGameOnly=${lastInGameOnly} saturation=${lastSaturation}`);
+
+  lifetimeHook = SteamClient.GameSessions.RegisterForAppLifetimeNotifications((update: any) => {
+    if (update.bRunning) {
+      runningGames.push(update.nInstanceID);
+    } else {
+      const index: number = runningGames.indexOf(update.nInstanceID);
+      if (index >= 0)
+        runningGames.splice(index, 1);
+      else
+        console.warn(`Unexpected end of application with appId ${update.unAppID}, instanceId ${update.nInstanceID}`);
+    }
+    if (lastInGameOnly)
+      applySaturation(serverApi, runningGames.length > 0 ? lastSaturation : 100);
   });
+
+  // apply saturation initially if user wants it always on
+  if (!lastInGameOnly) {
+    applySaturation(serverApi, lastSaturation);
+  }
 
   return {
     title: <div className={staticClasses.Title}>Example Plugin</div>,
     content: <Content serverAPI={serverApi} />,
     icon: <FaShip />,
     onDismount() {
-      serverApi.routerHook.removeRoute("/decky-plugin-test");
-    },
+      lifetimeHook!.unregister();
+      applySaturation(serverApi, 100); // reset saturation if we won't be running anymore
+    }
   };
 });
