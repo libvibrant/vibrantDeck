@@ -1,6 +1,6 @@
 {
   "name": "vibrant-deck",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Set vibrancy (saturation) of your screen",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
