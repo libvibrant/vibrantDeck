@@ -2,6 +2,10 @@
 ---
 A Steam Deck plugin (for Decky Loader) to adjust screen saturation / vibrancy.
 
+![Screenshot of Deck UI](assets/screenshot.jpg)
+
+![Example Screenshot](assets/mockup.webp)
+
 ## Build instrutions
 1. Clone the repository to use as an example for making your plugin.
 2. In your clone of the repository run these commands:
