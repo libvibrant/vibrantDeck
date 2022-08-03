@@ -37,13 +37,13 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
   useEffect(() => {
     console.log("Setting inGameOnly " + currentInGameOnly.toString());
     lastInGameOnly = currentInGameOnly;
-    localStorage.setItem(keyInGameOnly, currentInGameOnly);
+    localStorage.setItem(keyInGameOnly, currentInGameOnly.toString());
   }, [currentInGameOnly]);
 
   useEffect(() => {
     console.log("Setting saturation " + currentSaturation.toString());
     lastSaturation = currentSaturation;
-    localStorage.setItem(keySaturation, currentSaturation);
+    localStorage.setItem(keySaturation, currentSaturation.toString());
   }, [currentSaturation]);
 
   return (
