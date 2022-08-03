@@ -8,7 +8,7 @@ specifiers:
   '@rollup/plugin-typescript': ^8.3.3
   '@types/react': 16.14.0
   '@types/webpack': ^5.28.0
-  decky-frontend-lib: ^1.2.4
+  decky-frontend-lib: ^1.3.0
   react-icons: ^4.4.0
   rollup: ^2.77.1
   rollup-plugin-import-assets: ^1.1.1
@@ -17,7 +17,7 @@ specifiers:
   typescript: ^4.7.4
 
 dependencies:
-  decky-frontend-lib: 1.2.4
+  decky-frontend-lib: 1.3.0
   react-icons: 4.4.0
 
 devDependencies:
@@ -418,8 +418,8 @@ packages:
     resolution: {integrity: sha512-uX1KG+x9h5hIJsaKR9xHUeUraxf8IODOwq9JLNPq6BwB04a/xgpq3rcx47l5BZu5zBPlgD342tdke3Hom/nJRA==}
     dev: true
 
-  /decky-frontend-lib/1.2.4:
-    resolution: {integrity: sha512-r3mLEey9KUkF68geJVSjNlOz/Fg4vpMKUzoutSceyd8o/J5l+QR+Vf0b3gwK3UN9Sp4Pj4XQ1eB82+/W0ApsFg==}
+  /decky-frontend-lib/1.3.0:
+    resolution: {integrity: sha512-j3MfgfSlAE1TUZ5BCmwh01GLFUZsCkDH/FRfTWGYbaJ+49sy6WM9u/1hFHTuX43lK9ZM4BABvweKjsi2AnzsMw==}
     dev: false
 
   /deepmerge/4.2.2:
