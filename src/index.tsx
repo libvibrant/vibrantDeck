@@ -8,7 +8,7 @@ import {
   staticClasses,
 } from "decky-frontend-lib";
 import { VFC, useState, useEffect } from "react";
-import { FaShip } from "react-icons/fa";
+import { FaEyeDropper } from "react-icons/fa";
 
 // Appease TypeScript
 declare var SteamClient: any;
@@ -117,9 +117,9 @@ export default definePlugin((serverApi: ServerAPI) => {
   }
 
   return {
-    title: <div className={staticClasses.Title}>Example Plugin</div>,
+    title: <div className={staticClasses.Title}>vibrantDeck</div>,
     content: <Content serverAPI={serverApi} />,
-    icon: <FaShip />,
+    icon: <FaEyeDropper />,
     onDismount() {
       lifetimeHook!.unregister();
       applySaturation(serverApi, 100); // reset saturation if we won't be running anymore
