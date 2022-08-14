@@ -38,7 +38,8 @@
     "rollup-plugin-import-assets": "^1.1.1",
     "shx": "^0.3.4",
     "tslib": "^2.4.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "typescript-json-serializer": "^4.2.0"
   },
   "dependencies": {
     "decky-frontend-lib": "^1.3.0",

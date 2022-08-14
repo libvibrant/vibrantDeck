@@ -15,6 +15,7 @@ specifiers:
   shx: ^0.3.4
   tslib: ^2.4.0
   typescript: ^4.7.4
+  typescript-json-serializer: ^4.2.0
 
 dependencies:
   decky-frontend-lib: 1.3.0
@@ -33,6 +34,7 @@ devDependencies:
   shx: 0.3.4
   tslib: 2.4.0
   typescript: 4.7.4
+  typescript-json-serializer: 4.2.0
 
 packages:
 
@@ -697,6 +699,10 @@ packages:
       resolve: 1.22.1
     dev: true
 
+  /reflect-metadata/0.1.13:
+    resolution: {integrity: sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==}
+    dev: true
+
   /resolve/1.22.1:
     resolution: {integrity: sha512-nBpuuYuY5jFsli/JIs1oldw6fOQCBioohqWZg/2hiaOybXOft4lonv85uDOKXdf8rhyK159cxU5cDcK/NKk8zw==}
     hasBin: true
@@ -838,6 +844,13 @@ packages:
 
   /tslib/2.4.0:
     resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
+    dev: true
+
+  /typescript-json-serializer/4.2.0:
+    resolution: {integrity: sha512-o/rgBfbtOO1PC/8YeNBenl53WlZKE7GxL2E7Pvnvsv1NhSUWbGLchtfMMjPUHhqNYVkHj1FL5XHFJS3ZeR0Gsw==}
+    dependencies:
+      reflect-metadata: 0.1.13
+      tslib: 2.4.0
     dev: true
 
   /typescript/4.7.4:

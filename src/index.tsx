@@ -27,55 +27,80 @@ import {
 } from "decky-frontend-lib";
 import { VFC, useState, useEffect } from "react";
 import { FaEyeDropper } from "react-icons/fa";
+import { loadSettingsFromLocalStorage, Settings, saveSettingsToLocalStorage } from "./settings";
+import { RunningApps, Backend, DEFAULT_APP } from "./util";
 
 // Appease TypeScript
 declare var SteamClient: any;
 
-interface SaturationArgs {
-  saturation: number
-}
+let settings: Settings;
 
-const keyInGameOnly = "vibrantDeck_inGameOnly";
-const keySaturation = "vibrantDeck_saturation";
-let lastInGameOnly: boolean = true;
-let lastSaturation: number = 100;
+const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void }> = ({ runningApps, applyFn }) => {
+  const [initialized, setInitialized] = useState<boolean>(false);
 
-let lifetimeHook: any = null;
-let runningGames: number[] = [];
+  const [currentAppOverride, setCurrentAppOverride] = useState<boolean>(false);
+  const [currentAppOverridable, setCurrentAppOverridable] = useState<boolean>(false);
+  const [currentTargetSaturation, setCurrentTargetSaturation] = useState<number>(100);
 
-const applySaturation = (serverAPI: ServerAPI, saturation: number) => {
-  console.log("Applying saturation " + saturation.toString());
-  serverAPI.callPluginMethod<SaturationArgs, boolean>("set_saturation", {"saturation": saturation / 100.0});
-};
+  const refresh = () => {
+    const activeApp = RunningApps.active();
+    // does active app have a saved setting
+    setCurrentAppOverride(settings.perApp[activeApp]?.hasSettings() || false);
+    setCurrentAppOverridable(activeApp != DEFAULT_APP);
 
-const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
-  const [currentInGameOnly, setCurrentInGameOnly] = useState<boolean>(lastInGameOnly);
-  const [currentSaturation, setCurrentSaturation] = useState<number>(lastSaturation);
+    // get configured saturation for current app (also Deck UI!)
+    setCurrentTargetSaturation(settings.appSaturation(activeApp));
 
-  useEffect(() => {
-    console.log("Setting inGameOnly " + currentInGameOnly.toString());
-    lastInGameOnly = currentInGameOnly;
-    localStorage.setItem(keyInGameOnly, currentInGameOnly.toString());
-  }, [currentInGameOnly]);
+    setInitialized(true);
+  }
 
   useEffect(() => {
-    console.log("Setting saturation " + currentSaturation.toString());
-    lastSaturation = currentSaturation;
-    localStorage.setItem(keySaturation, currentSaturation.toString());
-  }, [currentSaturation]);
+    const activeApp = RunningApps.active();
+    if (!initialized)
+      return;
+
+    if (currentAppOverride && currentAppOverridable) {
+      console.log(`Setting app ${activeApp} to saturation ${currentTargetSaturation}`);
+      settings.ensureApp(activeApp).saturation = currentTargetSaturation;
+    } else {
+      console.log(`Setting global to saturation ${currentTargetSaturation}`);
+      settings.ensureApp(DEFAULT_APP).saturation = currentTargetSaturation;
+    }
+    applyFn(activeApp);
+
+    saveSettingsToLocalStorage(settings);
+  }, [currentTargetSaturation, initialized]);
+
+  useEffect(() => {
+    const activeApp = RunningApps.active();
+    if (!initialized)
+      return;
+    if (activeApp == DEFAULT_APP)
+      return;
+
+    console.log(`Setting app ${activeApp} to override ${currentAppOverride}`);
+
+    if (!currentAppOverride) {
+      settings.ensureApp(activeApp).saturation = undefined;
+      setCurrentTargetSaturation(settings.appSaturation(DEFAULT_APP));
+    }
+    saveSettingsToLocalStorage(settings);
+  }, [currentAppOverride, initialized]);
+
+  useEffect(() => {
+    refresh();
+    runningApps.listenActiveChange(() => refresh());
+  }, []);
 
   return (
     <PanelSection title="Control">
       <PanelSectionRow>
         <ToggleField
-          label="In-Game only"
-          description="Only apply saturation while a game is running"
-          checked={currentInGameOnly}
-          onChange={(inGameOnly) => {
-            setCurrentInGameOnly(inGameOnly);
-
-            // apply target saturation, if in-game-only is off, or if we are in a game either way
-            applySaturation(serverAPI, !inGameOnly || runningGames.length > 0 ? currentSaturation : 100);
+          label="Use per-game profile"
+          checked={currentAppOverride && currentAppOverridable}
+          disabled={!currentAppOverridable}
+          onChange={(override) => {
+            setCurrentAppOverride(override);
           }}
         />
       </PanelSectionRow>
@@ -83,17 +108,13 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
         <SliderField
           label="Saturation"
           description="Control the saturation of the display"
-          value={currentSaturation}
+          value={currentTargetSaturation}
           step={5}
           max={400}
           min={0}
           showValue={true}
           onChange={(saturation: number) => {
-            setCurrentSaturation(saturation);
-
-            // apply target saturation, if in-game-only is off, or if we are in a game either way
-            if (!currentInGameOnly || runningGames.length > 0)
-              applySaturation(serverAPI, saturation);
+            setCurrentTargetSaturation(saturation);
           }}
         />
       </PanelSectionRow>
@@ -101,46 +122,28 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({serverAPI}) => {
   );
 };
 
-export default definePlugin((serverApi: ServerAPI) => {
+export default definePlugin((serverAPI: ServerAPI) => {
   // load settings
-  const localInGameOnly = localStorage.getItem(keyInGameOnly);
-  const localSaturation = localStorage.getItem(keySaturation);
+  settings = loadSettingsFromLocalStorage();
 
-  if (localInGameOnly != null)
-    lastInGameOnly = localInGameOnly == "true";
-  try {
-    if (localSaturation != null)
-      lastSaturation = parseInt(localSaturation);
-  } catch {}
+  const backend = new Backend(serverAPI);
+  const runningApps = new RunningApps();
 
-  console.debug(`Initial settings inGameOnly=${lastInGameOnly} saturation=${lastSaturation}`);
-
-  lifetimeHook = SteamClient.GameSessions.RegisterForAppLifetimeNotifications((update: any) => {
-    if (update.bRunning) {
-      runningGames.push(update.unAppID);
-    } else {
-      const index: number = runningGames.indexOf(update.unAppID);
-      if (index >= 0)
-        runningGames.splice(index, 1);
-      else
-        console.warn(`Unexpected end of application with appId ${update.unAppID}, instanceId ${update.nInstanceID}`);
-    }
-    if (lastInGameOnly)
-      applySaturation(serverApi, runningGames.length > 0 ? lastSaturation : 100);
-  });
-
-  // apply saturation initially if user wants it always on
-  if (!lastInGameOnly) {
-    applySaturation(serverApi, lastSaturation);
-  }
+  const applySettings = (appId: string) => {
+    const saturation = settings.appSaturation(appId);
+    backend.applySaturation(saturation);
+  };
+  const unregisterMain = runningApps.listenActiveChange((newApp) => applySettings(newApp));
+  const pollTimer = setInterval(() => runningApps.pollActive(), 100);
 
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
-    content: <Content serverAPI={serverApi} />,
+    content: <Content runningApps={runningApps} applyFn={applySettings} />,
     icon: <FaEyeDropper />,
     onDismount() {
-      lifetimeHook!.unregister();
-      applySaturation(serverApi, 100); // reset saturation if we won't be running anymore
+      unregisterMain();
+      clearInterval(pollTimer);
+      backend.applySaturation(100); // reset saturation if we won't be running anymore
     }
   };
 });
