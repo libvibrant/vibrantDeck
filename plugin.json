@@ -1,10 +1,10 @@
 {
   "name": "vibrantDeck",
   "author": "Scrumplex",
-  "flags": ["debug"],
+  "flags": [],
   "publish": {
     "tags": ["vibrant", "saturation"],
     "description": "Set vibrancy (saturation) of your screen",
-    "image": "https://raw.githubusercontent.com/libvibrant/vibrantDeck/main/assets/vibrant.1024.png"
+    "image": "https://raw.githubusercontent.com/libvibrant/vibrantDeck/main/assets/screenshot.jpg"
   }
 }
