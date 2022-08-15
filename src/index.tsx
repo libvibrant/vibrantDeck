@@ -134,16 +134,15 @@ export default definePlugin((serverAPI: ServerAPI) => {
     const saturation = settings.appSaturation(appId);
     backend.applySaturation(saturation);
   };
-  const unregisterMain = runningApps.listenActiveChange((newApp) => applySettings(newApp));
-  const pollTimer = setInterval(() => runningApps.pollActive(), 100);
+
+  runningApps.register();
 
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
     content: <Content runningApps={runningApps} applyFn={applySettings} />,
     icon: <FaEyeDropper />,
     onDismount() {
-      unregisterMain();
-      clearInterval(pollTimer);
+      runningApps.unregister();
       backend.applySaturation(100); // reset saturation if we won't be running anymore
     }
   };

@@ -12,13 +12,26 @@ export const DEFAULT_APP = "0";
 export class RunningApps {
   private listeners: ActiveAppChangedHandler[] = [];
   private lastAppId: string = "";
+  private intervalId: any;
 
-  pollActive() {
+  private pollActive() {
     const newApp = RunningApps.active();
     if (this.lastAppId != newApp) {
       this.listeners.forEach((h) => h(newApp, this.lastAppId));
     }
     this.lastAppId = newApp;
+  }
+
+  register() {
+    if (this.intervalId == undefined)
+      this.intervalId = setInterval(() => this.pollActive(), 100);
+  }
+
+  unregister() {
+    if (this.intervalId != undefined)
+      clearInterval(this.intervalId);
+
+    this.listeners.splice(0, this.listeners.length);
   }
 
   listenActiveChange(fn: ActiveAppChangedHandler): UnregisterFn {
