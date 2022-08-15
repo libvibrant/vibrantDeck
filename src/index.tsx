@@ -93,10 +93,11 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
   }, []);
 
   return (
-    <PanelSection title="Control">
+    <PanelSection title="Color Settings">
       <PanelSectionRow>
         <ToggleField
           label="Use per-game profile"
+          description={"Currently using " + (currentAppOverride && currentAppOverridable ? "per-app" : "global") + " profile"}
           checked={currentAppOverride && currentAppOverridable}
           disabled={!currentAppOverridable}
           onChange={(override) => {
