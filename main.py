@@ -20,9 +20,13 @@ import os
 import sys
 import struct
 import subprocess
-from typing import List
+from typing import List, Iterable
 
 CTM_PROP = "GAMESCOPE_COLOR_MATRIX"
+GAMMA_LGAIN_BLEND_PROP = "GAMESCOPE_COLOR_LINEARGAIN_BLEND"
+GAMMA_LGAIN_PROP = "GAMESCOPE_COLOR_LINEARGAIN"
+GAMMA_GAIN_PROP = "GAMESCOPE_COLOR_GAIN"
+
 
 def saturation_to_coeffs(saturation: float) -> List[float]:
     coeff = (1.0 - saturation) / 3.0
@@ -33,11 +37,30 @@ def saturation_to_coeffs(saturation: float) -> List[float]:
     coeffs[8] += saturation
     return coeffs
 
+
 def float_to_long(x: float) -> int:
     return struct.unpack("!I", struct.pack("!f", x))[0]
 
+
 def long_to_float(x: int) -> float:
     return struct.unpack("!f", struct.pack("!I", x))[0]
+
+
+def set_cardinal_prop(prop_name: str, values: Iterable[int]):
+
+    param = ",".join(map(str, values))
+
+    command = ["xprop", "-root", "-f", prop_name,
+               "32c", "-set", prop_name, param]
+
+    if "DISPLAY" not in os.environ:
+        command.insert(1, ":1")
+        command.insert(1, "-display")
+
+    completed = subprocess.run(command, stderr=sys.stderr, stdout=sys.stdout)
+
+    return completed.returncode == 0
+
 
 class Plugin:
 
@@ -49,20 +72,29 @@ class Plugin:
         coeffs = saturation_to_coeffs(saturation)
 
         # represent floats as longs
-        long_coeffs = map(str, map(float_to_long, coeffs))
-        # concatenate longs to comma-separated list for xprop
-        ctm_param = ",".join(list(long_coeffs))
+        long_coeffs = map(float_to_long, coeffs)
 
-        command = ["xprop", "-root", "-f", CTM_PROP, "32c", "-set", CTM_PROP, ctm_param]
+        return set_cardinal_prop(CTM_PROP, long_coeffs)
 
-        if "DISPLAY" not in os.environ:
-            command.insert(1, ":1")
-            command.insert(1, "-display")
+    # values = 3 floats, R, G and B values respectively
+    async def set_gamma_linear_gain(self, values: List[float]):
+        long_values = map(float_to_long, values)
 
-        completed = subprocess.run(command, stderr=sys.stderr, stdout=sys.stdout)
+        return set_cardinal_prop(GAMMA_LGAIN_PROP, long_values)
 
-        return completed.returncode == 0
+    # values = 3 floats, R, G and B values respectively
+    async def set_gamma_gain(self, values: List[float]):
+        long_values = map(float_to_long, values)
 
+        return set_cardinal_prop(GAMMA_GAIN_PROP, long_values)
+
+    # value = weight of lineargain (1.0 means that only linear gain is used) (0.0 <= value <= 1.0)
+    async def set_gamma_linear_gain_blend(self, value: float):
+        long_value = float_to_long(value)
+
+        return set_cardinal_prop(GAMMA_LGAIN_BLEND_PROP, [long_value])
+
+    # TODO make this generic
     async def get_saturation(self) -> float:
         command = ["xprop", "-root", CTM_PROP]
 
@@ -80,7 +112,7 @@ class Plugin:
             # "1065353216, 0, 0, 0, 1065353216, 0, 0, 0, 1065353216"
             ctm_param = stdout.split("=")[1]
             # [1065353216, 0, 0, 0, 1065353216, 0, 0, 0, 1065353216]
-            long_coeffs = list(map(int, ctm_param.split(",")));
+            long_coeffs = list(map(int, ctm_param.split(",")))
             # [1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0]
             coeffs = list(map(long_to_float, long_coeffs))
             # 1.0

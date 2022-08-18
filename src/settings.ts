@@ -6,12 +6,34 @@ const SETTINGS_KEY = "vibrantDeck";
 const serializer = new JsonSerializer();
 
 @JsonObject()
+export class GammaSetting {
+  @JsonProperty()
+  linear: boolean = true;
+  @JsonProperty()
+  gain_r: number = 100;
+  @JsonProperty()
+  gain_g: number = 100;
+  @JsonProperty()
+  gain_b: number = 100;
+}
+
+@JsonObject()
 export class AppSetting {
   @JsonProperty()
   saturation?: number;
+  @JsonProperty()
+  gamma?: GammaSetting;
+
+  ensureGamma(): GammaSetting {
+    if (this.gamma == undefined)
+      this.gamma = new GammaSetting();
+    return this.gamma;
+  }
 
   hasSettings(): boolean {
     if (this.saturation != undefined)
+      return true;
+    if (this.gamma != undefined)
       return true;
     return false;
   }
@@ -36,6 +58,11 @@ export class Settings {
     if (this.perApp[DEFAULT_APP]?.saturation != undefined)
       return this.perApp[DEFAULT_APP].saturation!!;
     return 100;
+  }
+
+  appGamma(appId: string) {
+    // app gamma or global gamma or fallback to defaults
+    return this.perApp[appId]?.gamma || this.perApp[DEFAULT_APP]?.gamma || new GammaSetting();
   }
 }
 
