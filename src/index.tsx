@@ -137,6 +137,9 @@ export default definePlugin((serverAPI: ServerAPI) => {
 
   runningApps.register();
 
+  // apply initially
+  applySettings(RunningApps.active());
+
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
     content: <Content runningApps={runningApps} applyFn={applySettings} />,
