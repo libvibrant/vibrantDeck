@@ -29,9 +29,13 @@ export class Settings {
     return this.perApp[appId];
   }
 
-  appSaturation(appId: string) {
+  appSaturation(appId: string): number {
     // app saturation or global saturation or fallback 100
-    return this.perApp[appId]?.saturation || this.perApp[DEFAULT_APP]?.saturation || 100;
+    if (this.perApp[appId]?.saturation != undefined)
+      return this.perApp[appId].saturation!!;
+    if (this.perApp[DEFAULT_APP]?.saturation != undefined)
+      return this.perApp[DEFAULT_APP].saturation!!;
+    return 100;
   }
 }
 
