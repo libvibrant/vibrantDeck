@@ -10,11 +10,11 @@ export class GammaSetting {
   @JsonProperty()
   linear: boolean = true;
   @JsonProperty()
-  gain_r: number = 100;
+  gainR: number = 100;
   @JsonProperty()
-  gain_g: number = 100;
+  gainG: number = 100;
   @JsonProperty()
-  gain_b: number = 100;
+  gainB: number = 100;
 }
 
 @JsonObject()

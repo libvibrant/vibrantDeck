@@ -67,8 +67,8 @@ export class Backend {
 
   applyGamma(gamma: GammaSetting) {
     const defaults = new GammaSetting();
-    const default_values = [defaults.gain_r / 100.0, defaults.gain_g / 100.0, defaults.gain_b / 100.0]
-    const values = [gamma.gain_r / 100.0, gamma.gain_g / 100.0, gamma.gain_b / 100.0];
+    const default_values = [defaults.gainR / 100.0, defaults.gainG / 100.0, defaults.gainB / 100.0]
+    const values = [gamma.gainR / 100.0, gamma.gainG / 100.0, gamma.gainB / 100.0];
     console.log(`Applying gamma ${gamma.linear ? "linear" : ""} gain ${values.toString()}`);
     if (gamma.linear) {
       this.serverAPI.callPluginMethod<GammaGainArgs, boolean>("set_gamma_gain", { "values": default_values });

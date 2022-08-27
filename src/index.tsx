@@ -47,6 +47,9 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
   const [currentTargetGammaBlue, setCurrentTargetGammaBlue] = useState<number>(100);
 
   const refresh = () => {
+    // prevent updates while we are reloading
+    setInitialized(false);
+
     const activeApp = RunningApps.active();
     // does active app have a saved setting
     setCurrentAppOverride(settings.perApp[activeApp]?.hasSettings() || false);
@@ -55,57 +58,55 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
     // get configured saturation for current app (also Deck UI!)
     setCurrentTargetSaturation(settings.appSaturation(activeApp));
     setCurrentTargetGammaLinear(settings.appGamma(activeApp).linear);
-    setCurrentTargetGammaRed(settings.appGamma(activeApp).gain_r);
-    setCurrentTargetGammaGreen(settings.appGamma(activeApp).gain_g);
-    setCurrentTargetGammaBlue(settings.appGamma(activeApp).gain_b);
+    setCurrentTargetGammaRed(settings.appGamma(activeApp).gainR);
+    setCurrentTargetGammaGreen(settings.appGamma(activeApp).gainG);
+    setCurrentTargetGammaBlue(settings.appGamma(activeApp).gainB);
 
     setInitialized(true);
   }
 
   useEffect(() => {
-    const activeApp = RunningApps.active();
     if (!initialized)
       return;
 
+    let activeApp = RunningApps.active();
     if (currentAppOverride && currentAppOverridable) {
       console.log(`Setting app ${activeApp} to saturation ${currentTargetSaturation}`);
-      settings.ensureApp(activeApp).saturation = currentTargetSaturation;
     } else {
       console.log(`Setting global to saturation ${currentTargetSaturation}`);
-      settings.ensureApp(DEFAULT_APP).saturation = currentTargetSaturation;
+      activeApp = DEFAULT_APP;
     }
-    applyFn(activeApp);
+    settings.ensureApp(activeApp).saturation = currentTargetSaturation;
+    applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
   }, [currentTargetSaturation, initialized]);
 
   useEffect(() => {
-    const activeApp = RunningApps.active();
     if (!initialized)
       return;
 
+    let activeApp = RunningApps.active();
     if (currentAppOverride && currentAppOverridable) {
       console.log(`Setting app ${activeApp} to${currentTargetGammaLinear ? " linear" : ""} gamma ${currentTargetGammaRed} ${currentTargetGammaGreen} ${currentTargetGammaBlue}`);
-      settings.ensureApp(activeApp).ensureGamma().linear = currentTargetGammaLinear;
-      settings.ensureApp(activeApp).ensureGamma().gain_r = currentTargetGammaRed;
-      settings.ensureApp(activeApp).ensureGamma().gain_g = currentTargetGammaGreen;
-      settings.ensureApp(activeApp).ensureGamma().gain_b = currentTargetGammaBlue;
     } else {
       console.log(`Setting global to${currentTargetGammaLinear ? " linear" : ""} gamma ${currentTargetGammaRed} ${currentTargetGammaGreen} ${currentTargetGammaBlue}`);
-      settings.ensureApp(DEFAULT_APP).ensureGamma().linear = currentTargetGammaLinear;
-      settings.ensureApp(DEFAULT_APP).ensureGamma().gain_r = currentTargetGammaRed;
-      settings.ensureApp(DEFAULT_APP).ensureGamma().gain_g = currentTargetGammaGreen;
-      settings.ensureApp(DEFAULT_APP).ensureGamma().gain_b = currentTargetGammaBlue;
+      activeApp = DEFAULT_APP;
     }
-    applyFn(activeApp);
+    settings.ensureApp(activeApp).ensureGamma().linear = currentTargetGammaLinear;
+    settings.ensureApp(activeApp).ensureGamma().gainR = currentTargetGammaRed;
+    settings.ensureApp(activeApp).ensureGamma().gainG = currentTargetGammaGreen;
+    settings.ensureApp(activeApp).ensureGamma().gainB = currentTargetGammaBlue;
+    applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
   }, [currentTargetGammaLinear, currentTargetGammaRed, currentTargetGammaGreen, currentTargetGammaBlue, initialized]);
 
   useEffect(() => {
-    const activeApp = RunningApps.active();
     if (!initialized)
       return;
+
+    const activeApp = RunningApps.active();
     if (activeApp == DEFAULT_APP)
       return;
 
@@ -116,9 +117,9 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
       settings.ensureApp(activeApp).gamma = undefined;
       setCurrentTargetSaturation(settings.appSaturation(DEFAULT_APP));
       setCurrentTargetGammaLinear(settings.appGamma(DEFAULT_APP).linear);
-      setCurrentTargetGammaRed(settings.appGamma(DEFAULT_APP).gain_r);
-      setCurrentTargetGammaGreen(settings.appGamma(DEFAULT_APP).gain_g);
-      setCurrentTargetGammaBlue(settings.appGamma(DEFAULT_APP).gain_b);
+      setCurrentTargetGammaRed(settings.appGamma(DEFAULT_APP).gainR);
+      setCurrentTargetGammaGreen(settings.appGamma(DEFAULT_APP).gainG);
+      setCurrentTargetGammaBlue(settings.appGamma(DEFAULT_APP).gainB);
     }
     saveSettingsToLocalStorage(settings);
   }, [currentAppOverride, initialized]);
