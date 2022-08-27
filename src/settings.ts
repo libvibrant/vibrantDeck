@@ -62,7 +62,11 @@ export class Settings {
 
   appGamma(appId: string) {
     // app gamma or global gamma or fallback to defaults
-    return this.perApp[appId]?.gamma || this.perApp[DEFAULT_APP]?.gamma || new GammaSetting();
+    if (this.perApp[appId]?.gamma != undefined)
+      return this.perApp[appId].gamma!!;
+    if (this.perApp[DEFAULT_APP]?.gamma != undefined)
+      return this.perApp[DEFAULT_APP].gamma!!;
+    return new GammaSetting();
   }
 }
 

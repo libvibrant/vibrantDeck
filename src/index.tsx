@@ -113,6 +113,7 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
 
     if (!currentAppOverride) {
       settings.ensureApp(activeApp).saturation = undefined;
+      settings.ensureApp(activeApp).gamma = undefined;
       setCurrentTargetSaturation(settings.appSaturation(DEFAULT_APP));
       setCurrentTargetGammaLinear(settings.appGamma(DEFAULT_APP).linear);
       setCurrentTargetGammaRed(settings.appGamma(DEFAULT_APP).gain_r);
