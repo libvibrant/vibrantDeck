@@ -27,7 +27,7 @@ import {
 } from "decky-frontend-lib";
 import { VFC, useState, useEffect } from "react";
 import { FaEyeDropper } from "react-icons/fa";
-import { loadSettingsFromLocalStorage, Settings, saveSettingsToLocalStorage } from "./settings";
+import { loadSettingsFromLocalStorage, Settings, saveSettingsToLocalStorage, GammaSetting } from "./settings";
 import { RunningApps, Backend, DEFAULT_APP } from "./util";
 
 // Appease TypeScript
@@ -41,8 +41,15 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
   const [currentAppOverride, setCurrentAppOverride] = useState<boolean>(false);
   const [currentAppOverridable, setCurrentAppOverridable] = useState<boolean>(false);
   const [currentTargetSaturation, setCurrentTargetSaturation] = useState<number>(100);
+  const [currentTargetGammaLinear, setCurrentTargetGammaLinear] = useState<boolean>(true);
+  const [currentTargetGammaRed, setCurrentTargetGammaRed] = useState<number>(100);
+  const [currentTargetGammaGreen, setCurrentTargetGammaGreen] = useState<number>(100);
+  const [currentTargetGammaBlue, setCurrentTargetGammaBlue] = useState<number>(100);
 
   const refresh = () => {
+    // prevent updates while we are reloading
+    setInitialized(false);
+
     const activeApp = RunningApps.active();
     // does active app have a saved setting
     setCurrentAppOverride(settings.perApp[activeApp]?.hasSettings() || false);
@@ -50,31 +57,56 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
 
     // get configured saturation for current app (also Deck UI!)
     setCurrentTargetSaturation(settings.appSaturation(activeApp));
+    setCurrentTargetGammaLinear(settings.appGamma(activeApp).linear);
+    setCurrentTargetGammaRed(settings.appGamma(activeApp).gainR);
+    setCurrentTargetGammaGreen(settings.appGamma(activeApp).gainG);
+    setCurrentTargetGammaBlue(settings.appGamma(activeApp).gainB);
 
     setInitialized(true);
   }
 
   useEffect(() => {
-    const activeApp = RunningApps.active();
     if (!initialized)
       return;
 
+    let activeApp = RunningApps.active();
     if (currentAppOverride && currentAppOverridable) {
       console.log(`Setting app ${activeApp} to saturation ${currentTargetSaturation}`);
-      settings.ensureApp(activeApp).saturation = currentTargetSaturation;
     } else {
       console.log(`Setting global to saturation ${currentTargetSaturation}`);
-      settings.ensureApp(DEFAULT_APP).saturation = currentTargetSaturation;
+      activeApp = DEFAULT_APP;
     }
-    applyFn(activeApp);
+    settings.ensureApp(activeApp).saturation = currentTargetSaturation;
+    applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
   }, [currentTargetSaturation, initialized]);
 
   useEffect(() => {
-    const activeApp = RunningApps.active();
     if (!initialized)
       return;
+
+    let activeApp = RunningApps.active();
+    if (currentAppOverride && currentAppOverridable) {
+      console.log(`Setting app ${activeApp} to${currentTargetGammaLinear ? " linear" : ""} gamma ${currentTargetGammaRed} ${currentTargetGammaGreen} ${currentTargetGammaBlue}`);
+    } else {
+      console.log(`Setting global to${currentTargetGammaLinear ? " linear" : ""} gamma ${currentTargetGammaRed} ${currentTargetGammaGreen} ${currentTargetGammaBlue}`);
+      activeApp = DEFAULT_APP;
+    }
+    settings.ensureApp(activeApp).ensureGamma().linear = currentTargetGammaLinear;
+    settings.ensureApp(activeApp).ensureGamma().gainR = currentTargetGammaRed;
+    settings.ensureApp(activeApp).ensureGamma().gainG = currentTargetGammaGreen;
+    settings.ensureApp(activeApp).ensureGamma().gainB = currentTargetGammaBlue;
+    applyFn(RunningApps.active());
+
+    saveSettingsToLocalStorage(settings);
+  }, [currentTargetGammaLinear, currentTargetGammaRed, currentTargetGammaGreen, currentTargetGammaBlue, initialized]);
+
+  useEffect(() => {
+    if (!initialized)
+      return;
+
+    const activeApp = RunningApps.active();
     if (activeApp == DEFAULT_APP)
       return;
 
@@ -82,7 +114,12 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
 
     if (!currentAppOverride) {
       settings.ensureApp(activeApp).saturation = undefined;
+      settings.ensureApp(activeApp).gamma = undefined;
       setCurrentTargetSaturation(settings.appSaturation(DEFAULT_APP));
+      setCurrentTargetGammaLinear(settings.appGamma(DEFAULT_APP).linear);
+      setCurrentTargetGammaRed(settings.appGamma(DEFAULT_APP).gainR);
+      setCurrentTargetGammaGreen(settings.appGamma(DEFAULT_APP).gainG);
+      setCurrentTargetGammaBlue(settings.appGamma(DEFAULT_APP).gainB);
     }
     saveSettingsToLocalStorage(settings);
   }, [currentAppOverride, initialized]);
@@ -93,7 +130,7 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
   }, []);
 
   return (
-    <PanelSection title="Color Settings">
+    <PanelSection title="Profile">
       <PanelSectionRow>
         <ToggleField
           label="Use per-game profile"
@@ -119,6 +156,58 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
           }}
         />
       </PanelSectionRow>
+      <PanelSectionRow>
+        <ToggleField
+          label="Linear Gamma Gain"
+          description={"Use linear gamma scale"}
+          checked={currentTargetGammaLinear}
+          onChange={(linear) => {
+            setCurrentTargetGammaLinear(linear);
+          }}
+        />
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <SliderField
+          label="Gamma Red"
+          description={`Control${currentTargetGammaLinear ? " linear" : ""} gamma gain for red`}
+          value={currentTargetGammaRed}
+          step={5}
+          max={900}
+          min={-50}
+          showValue={true}
+          onChange={(value: number) => {
+            setCurrentTargetGammaRed(value);
+          }}
+        />
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <SliderField
+          label="Gamma Green"
+          description={`Control${currentTargetGammaLinear ? " linear" : ""} gamma gain for green´`}
+          value={currentTargetGammaGreen}
+          step={5}
+          max={900}
+          min={-50}
+          showValue={true}
+          onChange={(value: number) => {
+            setCurrentTargetGammaGreen(value);
+          }}
+        />
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <SliderField
+          label="Gamma Blue"
+          description={`Control${currentTargetGammaLinear ? " linear" : ""} gamma gain for blue`}
+          value={currentTargetGammaBlue}
+          step={5}
+          max={900}
+          min={-50}
+          showValue={true}
+          onChange={(value: number) => {
+            setCurrentTargetGammaBlue(value);
+          }}
+        />
+      </PanelSectionRow>
     </PanelSection>
   );
 };
@@ -133,6 +222,8 @@ export default definePlugin((serverAPI: ServerAPI) => {
   const applySettings = (appId: string) => {
     const saturation = settings.appSaturation(appId);
     backend.applySaturation(saturation);
+    const gamma = settings.appGamma(appId);
+    backend.applyGamma(gamma);
   };
 
   runningApps.register();
@@ -146,7 +237,9 @@ export default definePlugin((serverAPI: ServerAPI) => {
     icon: <FaEyeDropper />,
     onDismount() {
       runningApps.unregister();
-      backend.applySaturation(100); // reset saturation if we won't be running anymore
+      // reset color settings to default values
+      backend.applySaturation(100);
+      backend.applyGamma(new GammaSetting());
     }
   };
 });
