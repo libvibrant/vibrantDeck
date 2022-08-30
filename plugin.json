@@ -1,7 +1,7 @@
 {
   "name": "vibrantDeck",
   "author": "Scrumplex",
-  "flags": ["debug"],
+  "flags": [],
   "publish": {
     "tags": ["vibrant", "saturation"],
     "description": "Set vibrancy (saturation) of your screen",
