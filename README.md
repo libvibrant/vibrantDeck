@@ -21,5 +21,5 @@ pnpm update decky-frontend-lib --latest
 ```
 
 # License
-This project is licensed under the terms of the GNU General Public License 3.0. You can read the full license
-text in [LICENSE](LICENSE).
+This project is licensed under the terms of the Lesser GNU General Public License 3.0. You can read the full
+license text in [LICENSE](LICENSE).
