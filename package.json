@@ -1,7 +1,7 @@
 {
   "name": "vibrant-deck",
-  "version": "1.2.0",
-  "description": "Set vibrancy (saturation) of your screen",
+  "version": "1.2.1",
+  "description": "Adjust color settings of your Deck",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
     "watch": "rollup -c -w",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SteamDeckHomebrew/decky-plugin-template.git"
+    "url": "git+https://github.com/libvibrant/vibrantDeck.git"
   },
   "keywords": [
     "decky",
@@ -23,9 +23,9 @@
   "author": "Sefa Eyeoglu <contact@scrumplex.net>",
   "license": "LGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/SteamDeckHomebrew/decky-plugin-template/issues"
+    "url": "https://github.com/libvibrant/vibrantDeck/issues"
   },
-  "homepage": "https://github.com/SteamDeckHomebrew/decky-plugin-template#readme",
+  "homepage": "https://github.com/libvibrant/vibrantDeck#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.1.0",
     "@rollup/plugin-json": "^4.1.0",
@@ -38,11 +38,11 @@
     "rollup-plugin-import-assets": "^1.1.1",
     "shx": "^0.3.4",
     "tslib": "^2.4.0",
-    "typescript": "^4.7.4",
-    "typescript-json-serializer": "^4.2.0"
+    "typescript": "^4.7.4"
   },
   "dependencies": {
-    "decky-frontend-lib": "^1.7.5",
+    "typescript-json-serializer": "^4.2.0",
+    "decky-frontend-lib": "^3.0.0",
     "react-icons": "^4.4.0"
   },
   "pnpm": {

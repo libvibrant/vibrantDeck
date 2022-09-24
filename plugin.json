@@ -4,7 +4,7 @@
   "flags": [],
   "publish": {
     "tags": ["vibrant", "saturation"],
-    "description": "Set vibrancy (saturation) of your screen",
+    "description": "Adjust color settings of your Deck",
     "image": "https://raw.githubusercontent.com/libvibrant/vibrantDeck/main/assets/screenshot.jpg"
   }
 }
