@@ -35,9 +35,10 @@ declare var SteamClient: any;
 
 let settings: Settings;
 
-const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void }> = ({ runningApps, applyFn }) => {
+const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void, resetFn: () => void}> = ({ runningApps, applyFn, resetFn }) => {
   const [initialized, setInitialized] = useState<boolean>(false);
 
+  const [currentEnabled, setCurrentEnabled] = useState<boolean>(true);
   const [currentAppOverride, setCurrentAppOverride] = useState<boolean>(false);
   const [currentAppOverridable, setCurrentAppOverridable] = useState<boolean>(false);
   const [currentTargetSaturation, setCurrentTargetSaturation] = useState<number>(100);
@@ -49,6 +50,8 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
   const refresh = () => {
     // prevent updates while we are reloading
     setInitialized(false);
+
+    setCurrentEnabled(settings.enabled)
 
     const activeApp = RunningApps.active();
     // does active app have a saved setting
@@ -66,7 +69,7 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
   }
 
   useEffect(() => {
-    if (!initialized)
+    if (!initialized || !currentEnabled)
       return;
 
     let activeApp = RunningApps.active();
@@ -80,10 +83,10 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
     applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
-  }, [currentTargetSaturation, initialized]);
+  }, [currentTargetSaturation, currentEnabled, initialized]);
 
   useEffect(() => {
-    if (!initialized)
+    if (!initialized || !currentEnabled)
       return;
 
     let activeApp = RunningApps.active();
@@ -100,10 +103,10 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
     applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
-  }, [currentTargetGammaLinear, currentTargetGammaRed, currentTargetGammaGreen, currentTargetGammaBlue, initialized]);
+  }, [currentTargetGammaLinear, currentTargetGammaRed, currentTargetGammaGreen, currentTargetGammaBlue, currentEnabled, initialized]);
 
   useEffect(() => {
-    if (!initialized)
+    if (!initialized || !currentEnabled)
       return;
 
     const activeApp = RunningApps.active();
@@ -122,7 +125,18 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
       setCurrentTargetGammaBlue(settings.appGamma(DEFAULT_APP).gainB);
     }
     saveSettingsToLocalStorage(settings);
-  }, [currentAppOverride, initialized]);
+  }, [currentAppOverride, currentEnabled, initialized]);
+
+  useEffect(() => {
+    if (!initialized)
+      return;
+
+    if (!currentEnabled)
+      resetFn();
+
+    settings.enabled = currentEnabled;
+    saveSettingsToLocalStorage(settings);
+  }, [currentEnabled, initialized]);
 
   useEffect(() => {
     refresh();
@@ -130,85 +144,100 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void 
   }, []);
 
   return (
-    <PanelSection title="Profile">
-      <PanelSectionRow>
-        <ToggleField
-          label="Use per-game profile"
-          description={"Currently using " + (currentAppOverride && currentAppOverridable ? "per-app" : "global") + " profile"}
-          checked={currentAppOverride && currentAppOverridable}
-          disabled={!currentAppOverridable}
-          onChange={(override) => {
-            setCurrentAppOverride(override);
-          }}
-        />
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <SliderField
-          label="Saturation"
-          description="Control the saturation of the display"
-          value={currentTargetSaturation}
-          step={1}
-          max={400}
-          min={0}
-          showValue={true}
-          onChange={(saturation: number) => {
-            setCurrentTargetSaturation(saturation);
-          }}
-        />
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <ToggleField
-          label="Linear Gamma Gain"
-          description={"Use linear gamma scale"}
-          checked={currentTargetGammaLinear}
-          onChange={(linear) => {
-            setCurrentTargetGammaLinear(linear);
-          }}
-        />
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <SliderField
-          label="Gamma Red"
-          description={`Control${currentTargetGammaLinear ? " linear" : ""} gamma gain for red`}
-          value={currentTargetGammaRed}
-          step={1}
-          max={900}
-          min={-50}
-          showValue={true}
-          onChange={(value: number) => {
-            setCurrentTargetGammaRed(value);
-          }}
-        />
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <SliderField
-          label="Gamma Green"
-          description={`Control${currentTargetGammaLinear ? " linear" : ""} gamma gain for green´`}
-          value={currentTargetGammaGreen}
-          step={1}
-          max={900}
-          min={-50}
-          showValue={true}
-          onChange={(value: number) => {
-            setCurrentTargetGammaGreen(value);
-          }}
-        />
-      </PanelSectionRow>
-      <PanelSectionRow>
-        <SliderField
-          label="Gamma Blue"
-          description={`Control${currentTargetGammaLinear ? " linear" : ""} gamma gain for blue`}
-          value={currentTargetGammaBlue}
-          step={1}
-          max={900}
-          min={-50}
-          showValue={true}
-          onChange={(value: number) => {
-            setCurrentTargetGammaBlue(value);
-          }}
-        />
-      </PanelSectionRow>
-    </PanelSection>
+    <div>
+      <PanelSection title="General">
+        <PanelSectionRow>
+          <ToggleField
+            label="Enable color settings"
+            checked={currentEnabled}
+            onChange={(enabled) => {
+              setCurrentEnabled(enabled);
+            }}
+          />
+        </PanelSectionRow>
+      </PanelSection>
+      {currentEnabled &&
+        <PanelSection title="Profile">
+          <PanelSectionRow>
+            <ToggleField
+              label="Use per-game profile"
+              description={"Currently using " + (currentAppOverride && currentAppOverridable ? "per-app" : "global") + " profile"}
+              checked={currentAppOverride && currentAppOverridable}
+              disabled={!currentAppOverridable}
+              onChange={(override) => {
+                setCurrentAppOverride(override);
+              }}
+            />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <SliderField
+              label="Saturation"
+              description="Control the saturation of the display"
+              value={currentTargetSaturation}
+              step={1}
+              max={400}
+              min={0}
+              showValue={true}
+              onChange={(saturation: number) => {
+                setCurrentTargetSaturation(saturation);
+              }}
+            />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ToggleField
+              label="Linear Gamma Gain"
+              description={"Use linear gamma scale"}
+              checked={currentTargetGammaLinear}
+              onChange={(linear) => {
+                setCurrentTargetGammaLinear(linear);
+              }}
+            />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <SliderField
+              label="Gamma Red"
+              description={`Control${currentTargetGammaLinear ? " linear" : ""} gamma gain for red`}
+              value={currentTargetGammaRed}
+              step={1}
+              max={900}
+              min={-50}
+              showValue={true}
+              onChange={(value: number) => {
+                setCurrentTargetGammaRed(value);
+              }}
+            />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <SliderField
+              label="Gamma Green"
+              description={`Control${currentTargetGammaLinear ? " linear" : ""} gamma gain for green´`}
+              value={currentTargetGammaGreen}
+              step={1}
+              max={900}
+              min={-50}
+              showValue={true}
+              onChange={(value: number) => {
+                setCurrentTargetGammaGreen(value);
+              }}
+            />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <SliderField
+              label="Gamma Blue"
+              description={`Control${currentTargetGammaLinear ? " linear" : ""} gamma gain for blue`}
+              value={currentTargetGammaBlue}
+              step={1}
+              max={900}
+              min={-50}
+              showValue={true}
+              onChange={(value: number) => {
+                setCurrentTargetGammaBlue(value);
+              }}
+            />
+          </PanelSectionRow>
+        </PanelSection>
+      }
+    </div>
   );
 };
 
@@ -226,20 +255,28 @@ export default definePlugin((serverAPI: ServerAPI) => {
     backend.applyGamma(gamma);
   };
 
+  const resetSettings = () => {
+    // NOTE: This code ignores night mode as we don't have a good way to interface with it.
+    console.log("Resetting color values to defaults");
+    backend.applySaturation(100);
+    backend.applyGamma(new GammaSetting());
+  };
+
   runningApps.register();
 
   // apply initially
-  applySettings(RunningApps.active());
+  if (settings.enabled) {
+    applySettings(RunningApps.active());
+  }
 
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
-    content: <Content runningApps={runningApps} applyFn={applySettings} />,
+    content: <Content runningApps={runningApps} applyFn={applySettings} resetFn={resetSettings} />,
     icon: <FaEyeDropper />,
     onDismount() {
       runningApps.unregister();
       // reset color settings to default values
-      backend.applySaturation(100);
-      backend.applyGamma(new GammaSetting());
+      resetSettings();
     }
   };
 });

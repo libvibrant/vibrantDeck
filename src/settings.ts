@@ -41,6 +41,8 @@ export class AppSetting {
 
 @JsonObject()
 export class Settings {
+  @JsonProperty()
+  enabled: boolean = true;
   @JsonProperty({ isDictionary: true, type: AppSetting })
   perApp: { [appId: string]: AppSetting } = {};
 
