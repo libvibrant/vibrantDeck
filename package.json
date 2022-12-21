@@ -41,9 +41,9 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "typescript-json-serializer": "^4.2.0",
-    "decky-frontend-lib": "^3.7.12",
-    "react-icons": "^4.4.0"
+    "decky-frontend-lib": "^3.18.4",
+    "react-icons": "^4.4.0",
+    "typescript-json-serializer": "^4.2.0"
   },
   "pnpm": {
     "peerDependencyRules": {
