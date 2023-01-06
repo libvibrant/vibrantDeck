@@ -35,7 +35,7 @@ declare var SteamClient: any;
 
 let settings: Settings;
 
-const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void, resetFn: () => void}> = ({ runningApps, applyFn, resetFn }) => {
+const Content: VFC<{ applyFn: (appId: string) => void, resetFn: () => void}> = ({ applyFn, resetFn }) => {
   const [initialized, setInitialized] = useState<boolean>(false);
 
   const [currentEnabled, setCurrentEnabled] = useState<boolean>(true);
@@ -140,7 +140,6 @@ const Content: VFC<{ runningApps: RunningApps, applyFn: (appId: string) => void,
 
   useEffect(() => {
     refresh();
-    runningApps.listenActiveChange(() => refresh());
   }, []);
 
   return (
@@ -269,9 +268,11 @@ export default definePlugin((serverAPI: ServerAPI) => {
     applySettings(RunningApps.active());
   }
 
+  runningApps.listenActiveChange(() => applySettings(RunningApps.active()));
+
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
-    content: <Content runningApps={runningApps} applyFn={applySettings} resetFn={resetSettings} />,
+    content: <Content applyFn={applySettings} resetFn={resetSettings} />,
     icon: <FaEyeDropper />,
     onDismount() {
       runningApps.unregister();
