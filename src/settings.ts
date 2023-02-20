@@ -43,7 +43,7 @@ export class AppSetting {
 export class Settings {
   @JsonProperty()
   enabled: boolean = true;
-  @JsonProperty({ isDictionary: true, type: AppSetting })
+  @JsonProperty({ dataStructure: "dictionary", type: AppSetting })
   perApp: { [appId: string]: AppSetting } = {};
 
   ensureApp(appId: string): AppSetting {
