@@ -43,7 +43,7 @@
   "dependencies": {
     "decky-frontend-lib": "3.18.11",
     "react-icons": "4.7.1",
-    "typescript-json-serializer": "4.3.0"
+    "typescript-json-serializer": "5.1.0"
   },
   "pnpm": {
     "peerDependencyRules": {

@@ -15,12 +15,12 @@ specifiers:
   shx: 0.3.4
   tslib: 2.4.0
   typescript: 4.8.3
-  typescript-json-serializer: 4.3.0
+  typescript-json-serializer: 5.1.0
 
 dependencies:
   decky-frontend-lib: 3.18.11
   react-icons: 4.7.1
-  typescript-json-serializer: 4.3.0
+  typescript-json-serializer: 5.1.0
 
 devDependencies:
   '@rollup/plugin-commonjs': 21.1.0_rollup@2.79.1
@@ -851,8 +851,8 @@ packages:
   /tslib/2.4.0:
     resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
 
-  /typescript-json-serializer/4.3.0:
-    resolution: {integrity: sha512-992VnHgazGO0S2AxN2UOCB8BjUOMvmhi0wUIJb89URtLuPayxsED8w10gWhzSPAxlu97p6M76ZSeiKzLtSEaQg==}
+  /typescript-json-serializer/5.1.0:
+    resolution: {integrity: sha512-0q50ZQV5G+yKNJSZLRwTMAXXS8nx4LvDaNGp82FmLE3lXTKRcSaU+0+A8Ic0lKkqKLhj08OYwBGG6pVuCJImUw==}
     dependencies:
       reflect-metadata: 0.1.13
       tslib: 2.4.0
