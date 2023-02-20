@@ -40,3 +40,7 @@ __pycache__/
 yalc.lock
 
 .vscode/settings.json
+
+# Nix Flake
+.direnv
+.pre-commit-config.yaml
