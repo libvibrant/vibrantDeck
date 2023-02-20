@@ -13,7 +13,7 @@ specifiers:
   rollup: 2.79.1
   rollup-plugin-import-assets: 1.1.1
   shx: 0.3.4
-  tslib: 2.4.0
+  tslib: 2.5.0
   typescript: 4.8.3
   typescript-json-serializer: 4.3.0
 
@@ -27,13 +27,13 @@ devDependencies:
   '@rollup/plugin-json': 4.1.0_rollup@2.79.1
   '@rollup/plugin-node-resolve': 13.3.0_rollup@2.79.1
   '@rollup/plugin-replace': 4.0.0_rollup@2.79.1
-  '@rollup/plugin-typescript': 8.5.0_jm3lfwhp2n3nxb4wwf6zz565he
+  '@rollup/plugin-typescript': 8.5.0_ehjyvb57pq3p4pwbqmcffvaehq
   '@types/react': 16.14.35
   '@types/webpack': 5.28.0
   rollup: 2.79.1
   rollup-plugin-import-assets: 1.1.1_rollup@2.79.1
   shx: 0.3.4
-  tslib: 2.4.0
+  tslib: 2.5.0
   typescript: 4.8.3
 
 packages:
@@ -125,7 +125,7 @@ packages:
       rollup: 2.79.1
     dev: true
 
-  /@rollup/plugin-typescript/8.5.0_jm3lfwhp2n3nxb4wwf6zz565he:
+  /@rollup/plugin-typescript/8.5.0_ehjyvb57pq3p4pwbqmcffvaehq:
     resolution: {integrity: sha512-wMv1/scv0m/rXx21wD2IsBbJFba8wGF3ErJIr6IKRfRj49S85Lszbxb4DCo8iILpluTjk2GAAu9CoZt4G3ppgQ==}
     engines: {node: '>=8.0.0'}
     peerDependencies:
@@ -139,7 +139,7 @@ packages:
       '@rollup/pluginutils': 3.1.0_rollup@2.79.1
       resolve: 1.22.1
       rollup: 2.79.1
-      tslib: 2.4.0
+      tslib: 2.5.0
       typescript: 4.8.3
     dev: true
 
@@ -848,14 +848,14 @@ packages:
       source-map-support: 0.5.21
     dev: true
 
-  /tslib/2.4.0:
-    resolution: {integrity: sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==}
+  /tslib/2.5.0:
+    resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
 
   /typescript-json-serializer/4.3.0:
     resolution: {integrity: sha512-992VnHgazGO0S2AxN2UOCB8BjUOMvmhi0wUIJb89URtLuPayxsED8w10gWhzSPAxlu97p6M76ZSeiKzLtSEaQg==}
     dependencies:
       reflect-metadata: 0.1.13
-      tslib: 2.4.0
+      tslib: 2.5.0
     dev: false
 
   /typescript/4.8.3:
