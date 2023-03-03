@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "decky-frontend-lib": "3.19.1",
-    "react-icons": "4.7.1",
+    "react-icons": "4.8.0",
     "typescript-json-serializer": "5.1.0"
   },
   "pnpm": {
