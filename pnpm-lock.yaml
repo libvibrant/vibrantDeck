@@ -9,7 +9,7 @@ specifiers:
   '@types/react': 16.14.35
   '@types/webpack': 5.28.0
   decky-frontend-lib: 3.19.1
-  react-icons: 4.7.1
+  react-icons: 4.8.0
   rollup: 2.79.1
   rollup-plugin-import-assets: 1.1.1
   shx: 0.3.4
@@ -19,7 +19,7 @@ specifiers:
 
 dependencies:
   decky-frontend-lib: 3.19.1
-  react-icons: 4.7.1
+  react-icons: 4.8.0
   typescript-json-serializer: 5.1.0
 
 devDependencies:
@@ -688,8 +688,8 @@ packages:
       safe-buffer: 5.2.1
     dev: true
 
-  /react-icons/4.7.1:
-    resolution: {integrity: sha512-yHd3oKGMgm7zxo3EA7H2n7vxSoiGmHk5t6Ou4bXsfcgWyhfDKMpyKfhHR6Bjnn63c+YXBLBPUql9H4wPJM6sXw==}
+  /react-icons/4.8.0:
+    resolution: {integrity: sha512-N6+kOLcihDiAnj5Czu637waJqSnwlMNROzVZMhfX68V/9bu9qHaMIJC4UdozWoOk57gahFCNHwVvWzm0MTzRjg==}
     peerDependencies:
       react: '*'
     peerDependenciesMeta:
