@@ -37,8 +37,7 @@ export class RunningApps {
   unregister() {
     if (this.intervalId != undefined)
       clearInterval(this.intervalId);
-
-    this.listeners.splice(0, this.listeners.length);
+    this.intervalId = undefined;
   }
 
   listenActiveChange(fn: ActiveAppChangedHandler): UnregisterFn {

@@ -35,7 +35,7 @@ declare var SteamClient: any;
 
 let settings: Settings;
 
-const Content: VFC<{ applyFn: (appId: string) => void, resetFn: () => void}> = ({ applyFn, resetFn }) => {
+const Content: VFC<{ applyFn: (appId: string) => void, resetFn: () => void, listenModeFn: (enabled: boolean) => void}> = ({ applyFn, resetFn, listenModeFn }) => {
   const [initialized, setInitialized] = useState<boolean>(false);
 
   const [currentEnabled, setCurrentEnabled] = useState<boolean>(true);
@@ -130,6 +130,8 @@ const Content: VFC<{ applyFn: (appId: string) => void, resetFn: () => void}> = (
   useEffect(() => {
     if (!initialized)
       return;
+
+    listenModeFn(currentEnabled);
 
     if (!currentEnabled)
       resetFn();
@@ -261,7 +263,15 @@ export default definePlugin((serverAPI: ServerAPI) => {
     backend.applyGamma(new GammaSetting());
   };
 
-  runningApps.register();
+  const listenForRunningApps = (enabled: boolean) => {
+    if (enabled) {
+      console.log("Listening for actively running apps");
+      runningApps.register();
+    } else {
+      console.log("Stopped listening for actively running apps");
+      runningApps.unregister();
+    }
+  };
 
   // apply initially
   if (settings.enabled) {
@@ -269,10 +279,11 @@ export default definePlugin((serverAPI: ServerAPI) => {
   }
 
   runningApps.listenActiveChange(() => applySettings(RunningApps.active()));
+  listenForRunningApps(settings.enabled);
 
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
-    content: <Content applyFn={applySettings} resetFn={resetSettings} />,
+    content: <Content applyFn={applySettings} resetFn={resetSettings} listenModeFn={listenForRunningApps} />,
     icon: <FaEyeDropper />,
     onDismount() {
       runningApps.unregister();
