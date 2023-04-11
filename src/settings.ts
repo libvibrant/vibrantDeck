@@ -1,5 +1,9 @@
-import { JsonObject, JsonProperty, JsonSerializer } from 'typescript-json-serializer';
-import { DEFAULT_APP } from './util';
+import {
+  JsonObject,
+  JsonProperty,
+  JsonSerializer,
+} from "typescript-json-serializer";
+import { DEFAULT_APP } from "./util";
 
 const SETTINGS_KEY = "vibrantDeck";
 
@@ -25,16 +29,13 @@ export class AppSetting {
   gamma?: GammaSetting;
 
   ensureGamma(): GammaSetting {
-    if (this.gamma == undefined)
-      this.gamma = new GammaSetting();
+    if (this.gamma == undefined) this.gamma = new GammaSetting();
     return this.gamma;
   }
 
   hasSettings(): boolean {
-    if (this.saturation != undefined)
-      return true;
-    if (this.gamma != undefined)
-      return true;
+    if (this.saturation != undefined) return true;
+    if (this.gamma != undefined) return true;
     return false;
   }
 }

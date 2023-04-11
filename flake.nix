@@ -18,12 +18,15 @@
         checks = {
           pre-commit-check = pre-commit-hooks.lib.${system}.run {
             src = ./.;
-            hooks = { nixfmt.enable = true; };
+            hooks = {
+              nixfmt.enable = true;
+              prettier.enable = true;
+            };
           };
         };
         devShells.default = pkgs.mkShell {
           inherit (self.checks.${system}.pre-commit-check) shellHook;
-          packages = with pkgs; [ nodePackages.pnpm ];
+          packages = with pkgs; [ nodePackages.pnpm nodePackages.prettier ];
         };
       });
 }
