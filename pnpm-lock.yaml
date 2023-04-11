@@ -8,8 +8,8 @@ dependencies:
     specifier: 4.8.0
     version: 4.8.0
   typescript-json-serializer:
-    specifier: 5.1.0
-    version: 5.1.0
+    specifier: 6.0.0
+    version: 6.0.0
 
 devDependencies:
   '@rollup/plugin-commonjs':
@@ -864,8 +864,8 @@ packages:
   /tslib@2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
 
-  /typescript-json-serializer@5.1.0:
-    resolution: {integrity: sha512-0q50ZQV5G+yKNJSZLRwTMAXXS8nx4LvDaNGp82FmLE3lXTKRcSaU+0+A8Ic0lKkqKLhj08OYwBGG6pVuCJImUw==}
+  /typescript-json-serializer@6.0.0:
+    resolution: {integrity: sha512-1iWNgiO5iw7JZmCIytPtQX90UT4tO9b7IaEohYm9h17Ikx1FJi95BPIyhH0pKH8ctTjD6cdU/Gf6Y6ppNRGnrg==}
     dependencies:
       reflect-metadata: 0.1.13
       tslib: 2.5.0
