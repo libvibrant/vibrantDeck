@@ -1,4 +1,8 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
 dependencies:
   decky-frontend-lib:
@@ -26,7 +30,7 @@ devDependencies:
     version: 4.0.0(rollup@2.79.1)
   '@rollup/plugin-typescript':
     specifier: 8.5.0
-    version: 8.5.0(rollup@2.79.1)(tslib@2.5.0)(typescript@4.9.5)
+    version: 8.5.0(rollup@2.79.1)(tslib@2.5.3)(typescript@4.9.5)
   '@types/react':
     specifier: 16.14.40
     version: 16.14.40
@@ -43,8 +47,8 @@ devDependencies:
     specifier: 0.3.4
     version: 0.3.4
   tslib:
-    specifier: 2.5.0
-    version: 2.5.0
+    specifier: 2.5.3
+    version: 2.5.3
   typescript:
     specifier: 4.9.5
     version: 4.9.5
@@ -138,7 +142,7 @@ packages:
       rollup: 2.79.1
     dev: true
 
-  /@rollup/plugin-typescript@8.5.0(rollup@2.79.1)(tslib@2.5.0)(typescript@4.9.5):
+  /@rollup/plugin-typescript@8.5.0(rollup@2.79.1)(tslib@2.5.3)(typescript@4.9.5):
     resolution: {integrity: sha512-wMv1/scv0m/rXx21wD2IsBbJFba8wGF3ErJIr6IKRfRj49S85Lszbxb4DCo8iILpluTjk2GAAu9CoZt4G3ppgQ==}
     engines: {node: '>=8.0.0'}
     peerDependencies:
@@ -152,7 +156,7 @@ packages:
       '@rollup/pluginutils': 3.1.0(rollup@2.79.1)
       resolve: 1.22.1
       rollup: 2.79.1
-      tslib: 2.5.0
+      tslib: 2.5.3
       typescript: 4.9.5
     dev: true
 
@@ -861,14 +865,14 @@ packages:
       source-map-support: 0.5.21
     dev: true
 
-  /tslib@2.5.0:
-    resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
+  /tslib@2.5.3:
+    resolution: {integrity: sha512-mSxlJJwl3BMEQCUNnxXBU9jP4JBktcEGhURcPR6VQVlnP0FdDEsIaz0C35dXNGLyRfrATNofF0F5p2KPxQgB+w==}
 
   /typescript-json-serializer@6.0.0:
     resolution: {integrity: sha512-1iWNgiO5iw7JZmCIytPtQX90UT4tO9b7IaEohYm9h17Ikx1FJi95BPIyhH0pKH8ctTjD6cdU/Gf6Y6ppNRGnrg==}
     dependencies:
       reflect-metadata: 0.1.13
-      tslib: 2.5.0
+      tslib: 2.5.3
     dev: false
 
   /typescript@4.9.5:
