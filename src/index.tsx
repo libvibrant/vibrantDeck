@@ -55,6 +55,8 @@ const Content: VFC<{
     useState<number>(100);
   const [currentTargetGammaLinear, setCurrentTargetGammaLinear] =
     useState<boolean>(true);
+  const [singleGammaSlider, setSingleGammaSlider] =
+    useState<boolean>(false);  
   const [currentTargetGammaRed, setCurrentTargetGammaRed] =
     useState<number>(100);
   const [currentTargetGammaGreen, setCurrentTargetGammaGreen] =
@@ -228,6 +230,36 @@ const Content: VFC<{
             />
           </PanelSectionRow>
           <PanelSectionRow>
+            <ToggleField
+              label="Same Gain For All Channels"
+              description={"Use a single slider to set gain for all channels"}
+              checked={singleGammaSlider}
+              onChange={(singleSlider) => {
+                setCurrentTargetGammaGreen(currentTargetGammaRed);
+                setCurrentTargetGammaBlue(currentTargetGammaRed);
+                setSingleGammaSlider(singleSlider);
+              }}
+            />
+          </PanelSectionRow>
+          {singleGammaSlider && <PanelSectionRow>
+            <SliderField
+              label="Gamma"
+              description={`Control${
+                currentTargetGammaLinear ? " linear" : ""
+              } gamma gain for rgb`}
+              value={currentTargetGammaRed}
+              step={1}
+              max={900}
+              min={-50}
+              showValue={true}
+              onChange={(value: number) => {
+                setCurrentTargetGammaRed(value);
+                setCurrentTargetGammaGreen(value);
+                setCurrentTargetGammaBlue(value);
+              }}
+            />
+          </PanelSectionRow>}
+          {!singleGammaSlider && <div><PanelSectionRow>
             <SliderField
               label="Gamma Red"
               description={`Control${
@@ -274,7 +306,7 @@ const Content: VFC<{
                 setCurrentTargetGammaBlue(value);
               }}
             />
-          </PanelSectionRow>
+          </PanelSectionRow></div>}
         </PanelSection>
       )}
     </div>
