@@ -55,7 +55,7 @@ const Content: VFC<{
     useState<number>(100);
   const [currentTargetGammaLinear, setCurrentTargetGammaLinear] =
     useState<boolean>(true);
-  const [currentSingleGammaSlider, setSingleGammaSlider] =
+  const [currentSingleGammaSlider, setCurrentSingleGammaSlider] =
     useState<boolean>(false);  
   const [currentTargetGammaRed, setCurrentTargetGammaRed] =
     useState<number>(100);
@@ -69,7 +69,7 @@ const Content: VFC<{
     setInitialized(false);
 
     setCurrentEnabled(settings.enabled);
-    setSingleGammaSlider(settings.singleSlider);
+    setCurrentSingleGammaSlider(settings.singleSlider);
 
     const activeApp = RunningApps.active();
     // does active app have a saved setting
@@ -240,7 +240,7 @@ const Content: VFC<{
               onChange={(singleSlider) => {
                 setCurrentTargetGammaGreen(currentTargetGammaRed);
                 setCurrentTargetGammaBlue(currentTargetGammaRed);
-                setSingleGammaSlider(singleSlider);
+                setCurrentSingleGammaSlider(singleSlider);
               }}
             />
           </PanelSectionRow>
