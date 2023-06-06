@@ -55,7 +55,7 @@ const Content: VFC<{
     useState<number>(100);
   const [currentTargetGammaLinear, setCurrentTargetGammaLinear] =
     useState<boolean>(true);
-  const [singleGammaSlider, setSingleGammaSlider] =
+  const [currentSingleGammaSlider, setSingleGammaSlider] =
     useState<boolean>(false);  
   const [currentTargetGammaRed, setCurrentTargetGammaRed] =
     useState<number>(100);
@@ -69,6 +69,7 @@ const Content: VFC<{
     setInitialized(false);
 
     setCurrentEnabled(settings.enabled);
+    setSingleGammaSlider(settings.singleSlider);
 
     const activeApp = RunningApps.active();
     // does active app have a saved setting
@@ -126,6 +127,7 @@ const Content: VFC<{
     settings.ensureApp(activeApp).ensureGamma().gainR = currentTargetGammaRed;
     settings.ensureApp(activeApp).ensureGamma().gainG = currentTargetGammaGreen;
     settings.ensureApp(activeApp).ensureGamma().gainB = currentTargetGammaBlue;
+    settings.singleSlider = currentSingleGammaSlider;
     applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
@@ -135,6 +137,7 @@ const Content: VFC<{
     currentTargetGammaGreen,
     currentTargetGammaBlue,
     currentEnabled,
+    currentSingleGammaSlider,
     initialized,
   ]);
 
@@ -233,7 +236,7 @@ const Content: VFC<{
             <ToggleField
               label="Same Gain For All Channels"
               description={"Use a single slider to set gain for all channels"}
-              checked={singleGammaSlider}
+              checked={currentSingleGammaSlider}
               onChange={(singleSlider) => {
                 setCurrentTargetGammaGreen(currentTargetGammaRed);
                 setCurrentTargetGammaBlue(currentTargetGammaRed);
@@ -241,7 +244,7 @@ const Content: VFC<{
               }}
             />
           </PanelSectionRow>
-          {singleGammaSlider && <PanelSectionRow>
+          {currentSingleGammaSlider && <PanelSectionRow>
             <SliderField
               label="Gamma"
               description={`Control${
@@ -259,7 +262,7 @@ const Content: VFC<{
               }}
             />
           </PanelSectionRow>}
-          {!singleGammaSlider && <div><PanelSectionRow>
+          {!currentSingleGammaSlider && <div><PanelSectionRow>
             <SliderField
               label="Gamma Red"
               description={`Control${
