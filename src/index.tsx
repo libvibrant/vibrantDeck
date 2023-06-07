@@ -55,6 +55,8 @@ const Content: VFC<{
     useState<number>(100);
   const [currentTargetGammaLinear, setCurrentTargetGammaLinear] =
     useState<boolean>(true);
+  const [currentAdvancedSettings, setCurrentAdvancedSettings] =
+    useState<boolean>(false);  
   const [currentTargetGammaRed, setCurrentTargetGammaRed] =
     useState<number>(100);
   const [currentTargetGammaGreen, setCurrentTargetGammaGreen] =
@@ -67,6 +69,7 @@ const Content: VFC<{
     setInitialized(false);
 
     setCurrentEnabled(settings.enabled);
+    setCurrentAdvancedSettings(settings.advancedSettingsUI);
 
     const activeApp = RunningApps.active();
     // does active app have a saved setting
@@ -124,6 +127,7 @@ const Content: VFC<{
     settings.ensureApp(activeApp).ensureGamma().gainR = currentTargetGammaRed;
     settings.ensureApp(activeApp).ensureGamma().gainG = currentTargetGammaGreen;
     settings.ensureApp(activeApp).ensureGamma().gainB = currentTargetGammaBlue;
+    settings.advancedSettingsUI = currentAdvancedSettings;
     applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
@@ -133,6 +137,7 @@ const Content: VFC<{
     currentTargetGammaGreen,
     currentTargetGammaBlue,
     currentEnabled,
+    currentAdvancedSettings,
     initialized,
   ]);
 
@@ -228,6 +233,37 @@ const Content: VFC<{
             />
           </PanelSectionRow>
           <PanelSectionRow>
+            <ToggleField
+              label="Advanced Settings"
+              description={"Enable advanced settings"}
+              checked={currentAdvancedSettings}
+              onChange={(advancedSettings) => {
+                setCurrentTargetGammaGreen(currentTargetGammaRed);
+                setCurrentTargetGammaBlue(currentTargetGammaRed);
+                setCurrentAdvancedSettings(advancedSettings);
+              }}
+            />
+          </PanelSectionRow>
+          {!currentAdvancedSettings && <PanelSectionRow>
+            <SliderField
+              label="Gamma"
+              description={`Control${
+                currentTargetGammaLinear ? " linear" : ""
+              } gamma gain`}
+              value={currentTargetGammaRed}
+              step={1}
+              max={900}
+              min={-50}
+              resetValue={100}
+              showValue={true}
+              onChange={(value: number) => {
+                setCurrentTargetGammaRed(value);
+                setCurrentTargetGammaGreen(value);
+                setCurrentTargetGammaBlue(value);
+              }}
+            />
+          </PanelSectionRow>}
+          {currentAdvancedSettings && <div><PanelSectionRow>
             <SliderField
               label="Gamma Red"
               description={`Control${
@@ -237,6 +273,7 @@ const Content: VFC<{
               step={1}
               max={900}
               min={-50}
+              resetValue={100}
               showValue={true}
               onChange={(value: number) => {
                 setCurrentTargetGammaRed(value);
@@ -253,6 +290,7 @@ const Content: VFC<{
               step={1}
               max={900}
               min={-50}
+              resetValue={100}
               showValue={true}
               onChange={(value: number) => {
                 setCurrentTargetGammaGreen(value);
@@ -269,12 +307,13 @@ const Content: VFC<{
               step={1}
               max={900}
               min={-50}
+              resetValue={100}
               showValue={true}
               onChange={(value: number) => {
                 setCurrentTargetGammaBlue(value);
               }}
             />
-          </PanelSectionRow>
+          </PanelSectionRow></div>}
         </PanelSection>
       )}
     </div>
