@@ -32,8 +32,8 @@ devDependencies:
     specifier: 8.5.0
     version: 8.5.0(rollup@2.79.1)(tslib@2.5.3)(typescript@4.9.5)
   '@types/react':
-    specifier: 16.14.40
-    version: 16.14.40
+    specifier: 16.14.42
+    version: 16.14.42
   '@types/webpack':
     specifier: 5.28.1
     version: 5.28.1
@@ -210,8 +210,8 @@ packages:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
     dev: true
 
-  /@types/react@16.14.40:
-    resolution: {integrity: sha512-elQj2VQHDuJ5xuEcn5Wxh/YQFNbEuPJFRKSdyG866awDm5dmtoqsMmuAJWb/l/qd2kDkZMfOTKygVfMIdBBPKg==}
+  /@types/react@16.14.42:
+    resolution: {integrity: sha512-r6lbqQBJsQ5JJ0fp5I1+F3weosNhk7jOEcKeusIlCDYUK6kCpvIkYCamBNqGyS6WEztYlT8wmAVgblV0HxOFoA==}
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
