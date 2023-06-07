@@ -27,7 +27,7 @@ export class AppSetting {
   saturation?: number;
   @JsonProperty()
   gamma?: GammaSetting;
-  
+
   ensureGamma(): GammaSetting {
     if (this.gamma == undefined) this.gamma = new GammaSetting();
     return this.gamma;
@@ -47,8 +47,8 @@ export class Settings {
   @JsonProperty({ dataStructure: "dictionary", type: AppSetting })
   perApp: { [appId: string]: AppSetting } = {};
   @JsonProperty()
-  singleSlider: boolean = false;
-  
+  advancedSettingsUI: boolean = true;
+
   ensureApp(appId: string): AppSetting {
     if (!(appId in this.perApp)) {
       this.perApp[appId] = new AppSetting();
