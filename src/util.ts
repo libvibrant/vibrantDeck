@@ -1,4 +1,4 @@
-import { Router, ServerAPI } from "decky-frontend-lib";
+import { Router, ServerAPI, ServerResponse } from "decky-frontend-lib";
 import { GammaSetting } from "./settings";
 
 interface SaturationArgs {
@@ -12,6 +12,9 @@ interface GammaBlendArgs {
 }
 
 type ActiveAppChangedHandler = (newAppId: string, oldAppId: string) => void;
+type ExternalDisplayStatusChangedHandler = (
+  newExternalDisplayConnected: boolean
+) => void;
 type UnregisterFn = () => void;
 
 export const DEFAULT_APP = "0";
@@ -48,6 +51,66 @@ export class RunningApps {
 
   static active() {
     return Router.MainRunningApp?.appid || DEFAULT_APP;
+  }
+}
+
+export class ExternalDisplayState {
+  private backend: Backend;
+  private listeners: ExternalDisplayStatusChangedHandler[] = [];
+  private lastConnectedState: boolean = false;
+  private static currentConnectedState: boolean = false;
+  private static connectedDisplays: Array<string> = [];
+  private intervalId: any;
+
+  constructor(backend: Backend) {
+    this.backend = backend;
+  }
+
+  private pollActive() {
+    if (
+      ExternalDisplayState.currentConnectedState !=
+      this.lastConnectedState
+    ) {
+      this.listeners.forEach((h) =>
+        h(ExternalDisplayState.currentConnectedState)
+      );
+    }
+    this.lastConnectedState =
+    ExternalDisplayState.currentConnectedState;
+      this.backend.getDisplays().then((value: ServerResponse<Array<string>>) => {
+      if (value.success && value.result.length > 0) {
+        ExternalDisplayState.connectedDisplays = value.result;
+        ExternalDisplayState.currentConnectedState = (value.result.length > 1);
+      } else {
+        ExternalDisplayState.connectedDisplays = ["Err "+value.result];
+        ExternalDisplayState.currentConnectedState = false;
+      }
+    });
+  }
+
+  register() {
+    if (this.intervalId == undefined)
+    this.intervalId = setInterval(() => this.pollActive(), 3000);
+  }
+
+  unregister() {
+    if (this.intervalId != undefined) clearInterval(this.intervalId);
+    this.intervalId = undefined;
+  }
+
+  listenChange(fn: ExternalDisplayStatusChangedHandler): UnregisterFn {
+    const idx = this.listeners.push(fn) - 1;
+    return () => {
+      this.listeners.splice(idx, 1);
+    };
+  }
+
+  current() {
+    return ExternalDisplayState.currentConnectedState;
+  }
+
+  displays() {
+    return ExternalDisplayState.connectedDisplays;
   }
 }
 
@@ -107,5 +170,12 @@ export class Backend {
         { value: 0.0 }
       );
     }
+  }
+
+  getDisplays() {
+    return this.serverAPI.callPluginMethod<void, Array<string>>(
+      "get_displays",
+      undefined
+    );
   }
 }

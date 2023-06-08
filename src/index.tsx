@@ -24,6 +24,8 @@ import {
   ServerAPI,
   ToggleField,
   staticClasses,
+  Button,
+  Field,
 } from "decky-frontend-lib";
 import { VFC, useState, useEffect } from "react";
 import { FaEyeDropper } from "react-icons/fa";
@@ -33,7 +35,12 @@ import {
   saveSettingsToLocalStorage,
   GammaSetting,
 } from "./settings";
-import { RunningApps, Backend, DEFAULT_APP } from "./util";
+import {
+  RunningApps,
+  Backend,
+  DEFAULT_APP,
+  ExternalDisplayState,
+} from "./util";
 
 // Appease TypeScript
 declare var SteamClient: any;
@@ -44,7 +51,8 @@ const Content: VFC<{
   applyFn: (appId: string) => void;
   resetFn: () => void;
   listenModeFn: (enabled: boolean) => void;
-}> = ({ applyFn, resetFn, listenModeFn }) => {
+  externalDisplayState: ExternalDisplayState;
+}> = ({ applyFn, resetFn, listenModeFn, externalDisplayState }) => {
   const [initialized, setInitialized] = useState<boolean>(false);
 
   const [currentEnabled, setCurrentEnabled] = useState<boolean>(true);
@@ -56,13 +64,15 @@ const Content: VFC<{
   const [currentTargetGammaLinear, setCurrentTargetGammaLinear] =
     useState<boolean>(true);
   const [currentAdvancedSettings, setCurrentAdvancedSettings] =
-    useState<boolean>(false);  
+    useState<boolean>(false);
   const [currentTargetGammaRed, setCurrentTargetGammaRed] =
     useState<number>(100);
   const [currentTargetGammaGreen, setCurrentTargetGammaGreen] =
     useState<number>(100);
   const [currentTargetGammaBlue, setCurrentTargetGammaBlue] =
     useState<number>(100);
+  const [currentHasExternalDisplay, setCurrentHasExternalDisplay] =
+    useState<boolean>(false);
 
   const refresh = () => {
     // prevent updates while we are reloading
@@ -82,6 +92,8 @@ const Content: VFC<{
     setCurrentTargetGammaRed(settings.appGamma(activeApp).gainR);
     setCurrentTargetGammaGreen(settings.appGamma(activeApp).gainG);
     setCurrentTargetGammaBlue(settings.appGamma(activeApp).gainB);
+
+    setCurrentHasExternalDisplay(externalDisplayState.current);
 
     setInitialized(true);
   };
@@ -173,12 +185,32 @@ const Content: VFC<{
   }, [currentEnabled, initialized]);
 
   useEffect(() => {
+    if (!initialized) return;
+    externalDisplayState.listenChange((newValue) => {setCurrentHasExternalDisplay(newValue);})
+  }, [initialized, externalDisplayState]);
+
+  useEffect(() => {
     refresh();
   }, []);
+
+  const displayList = externalDisplayState.displays().map((v) => <Field label={v}></Field>);
 
   return (
     <div>
       <PanelSection title="General">
+        <Field
+          label={
+            currentHasExternalDisplay ? "External display" : "Internal display"
+          }
+        ></Field>
+        <Button
+          onClick={() => {
+            setCurrentHasExternalDisplay(externalDisplayState.current);
+          }}
+        >
+          Refresh
+        </Button>
+        {displayList}
         <PanelSectionRow>
           <ToggleField
             label="Enable color settings"
@@ -244,76 +276,82 @@ const Content: VFC<{
               }}
             />
           </PanelSectionRow>
-          {!currentAdvancedSettings && <PanelSectionRow>
-            <SliderField
-              label="Gamma"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain`}
-              value={currentTargetGammaRed}
-              step={1}
-              max={900}
-              min={-50}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaRed(value);
-                setCurrentTargetGammaGreen(value);
-                setCurrentTargetGammaBlue(value);
-              }}
-            />
-          </PanelSectionRow>}
-          {currentAdvancedSettings && <div><PanelSectionRow>
-            <SliderField
-              label="Gamma Red"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain for red`}
-              value={currentTargetGammaRed}
-              step={1}
-              max={900}
-              min={-50}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaRed(value);
-              }}
-            />
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <SliderField
-              label="Gamma Green"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain for green´`}
-              value={currentTargetGammaGreen}
-              step={1}
-              max={900}
-              min={-50}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaGreen(value);
-              }}
-            />
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <SliderField
-              label="Gamma Blue"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain for blue`}
-              value={currentTargetGammaBlue}
-              step={1}
-              max={900}
-              min={-50}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaBlue(value);
-              }}
-            />
-          </PanelSectionRow></div>}
+          {!currentAdvancedSettings && (
+            <PanelSectionRow>
+              <SliderField
+                label="Gamma"
+                description={`Control${
+                  currentTargetGammaLinear ? " linear" : ""
+                } gamma gain`}
+                value={currentTargetGammaRed}
+                step={1}
+                max={900}
+                min={-50}
+                resetValue={100}
+                showValue={true}
+                onChange={(value: number) => {
+                  setCurrentTargetGammaRed(value);
+                  setCurrentTargetGammaGreen(value);
+                  setCurrentTargetGammaBlue(value);
+                }}
+              />
+            </PanelSectionRow>
+          )}
+          {currentAdvancedSettings && (
+            <div>
+              <PanelSectionRow>
+                <SliderField
+                  label="Gamma Red"
+                  description={`Control${
+                    currentTargetGammaLinear ? " linear" : ""
+                  } gamma gain for red`}
+                  value={currentTargetGammaRed}
+                  step={1}
+                  max={900}
+                  min={-50}
+                  resetValue={100}
+                  showValue={true}
+                  onChange={(value: number) => {
+                    setCurrentTargetGammaRed(value);
+                  }}
+                />
+              </PanelSectionRow>
+              <PanelSectionRow>
+                <SliderField
+                  label="Gamma Green"
+                  description={`Control${
+                    currentTargetGammaLinear ? " linear" : ""
+                  } gamma gain for green´`}
+                  value={currentTargetGammaGreen}
+                  step={1}
+                  max={900}
+                  min={-50}
+                  resetValue={100}
+                  showValue={true}
+                  onChange={(value: number) => {
+                    setCurrentTargetGammaGreen(value);
+                  }}
+                />
+              </PanelSectionRow>
+              <PanelSectionRow>
+                <SliderField
+                  label="Gamma Blue"
+                  description={`Control${
+                    currentTargetGammaLinear ? " linear" : ""
+                  } gamma gain for blue`}
+                  value={currentTargetGammaBlue}
+                  step={1}
+                  max={900}
+                  min={-50}
+                  resetValue={100}
+                  showValue={true}
+                  onChange={(value: number) => {
+                    setCurrentTargetGammaBlue(value);
+                  }}
+                />
+              </PanelSectionRow>
+            </div>
+          )}
         </PanelSection>
       )}
     </div>
@@ -326,6 +364,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
 
   const backend = new Backend(serverAPI);
   const runningApps = new RunningApps();
+  const externalDisplayState = new ExternalDisplayState(backend);
 
   const applySettings = (appId: string) => {
     const saturation = settings.appSaturation(appId);
@@ -341,13 +380,15 @@ export default definePlugin((serverAPI: ServerAPI) => {
     backend.applyGamma(new GammaSetting());
   };
 
-  const listenForRunningApps = (enabled: boolean) => {
+  const listenForChanges = (enabled: boolean) => {
     if (enabled) {
       console.log("Listening for actively running apps");
       runningApps.register();
+      externalDisplayState.register();
     } else {
       console.log("Stopped listening for actively running apps");
       runningApps.unregister();
+      externalDisplayState.unregister();
     }
   };
 
@@ -357,7 +398,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
   }
 
   runningApps.listenActiveChange(() => applySettings(RunningApps.active()));
-  listenForRunningApps(settings.enabled);
+  listenForChanges(settings.enabled);
 
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
@@ -365,12 +406,14 @@ export default definePlugin((serverAPI: ServerAPI) => {
       <Content
         applyFn={applySettings}
         resetFn={resetSettings}
-        listenModeFn={listenForRunningApps}
+        listenModeFn={listenForChanges}
+        externalDisplayState={externalDisplayState}
       />
     ),
     icon: <FaEyeDropper />,
     onDismount() {
       runningApps.unregister();
+      externalDisplayState.unregister();
       // reset color settings to default values
       resetSettings();
     },

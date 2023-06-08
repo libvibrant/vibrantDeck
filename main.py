@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import glob
 import os
 import sys
 import struct
@@ -121,3 +122,14 @@ class Plugin:
             return saturation
 
         return 1.0
+    
+    async def get_displays(self) -> List[str]:
+        displays = []
+        display_status_files = glob.glob("/sys/class/drm/*/status")
+        for filename in display_status_files:
+            with open(filename) as f:
+                status = f.read()
+                if status.startswith("connected"):
+                    displays.append(filename.split('/')[4])
+
+        return displays
