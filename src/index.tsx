@@ -24,8 +24,6 @@ import {
   ServerAPI,
   ToggleField,
   staticClasses,
-  Button,
-  Field,
 } from "decky-frontend-lib";
 import { VFC, useState, useEffect } from "react";
 import { FaEyeDropper } from "react-icons/fa";
@@ -48,7 +46,7 @@ declare var SteamClient: any;
 let settings: Settings;
 
 const Content: VFC<{
-  applyFn: (appId: string) => void;
+  applyFn: (appId: string, external: boolean) => void;
   resetFn: () => void;
   listenModeFn: (enabled: boolean) => void;
   externalDisplayState: ExternalDisplayState;
@@ -77,23 +75,23 @@ const Content: VFC<{
   const refresh = () => {
     // prevent updates while we are reloading
     setInitialized(false);
-
-    setCurrentEnabled(settings.enabled);
+    const external = externalDisplayState.current();
+    setCurrentHasExternalDisplay(external);
+    setCurrentEnabled(settings.getEnabled(external));
     setCurrentAdvancedSettings(settings.advancedSettingsUI);
 
     const activeApp = RunningApps.active();
+    const appDict = external ? settings.externalPerApp : settings.perApp;
     // does active app have a saved setting
-    setCurrentAppOverride(settings.perApp[activeApp]?.hasSettings() || false);
+    setCurrentAppOverride(appDict[activeApp]?.hasSettings() || false);
     setCurrentAppOverridable(activeApp != DEFAULT_APP);
 
     // get configured saturation for current app (also Deck UI!)
-    setCurrentTargetSaturation(settings.appSaturation(activeApp));
-    setCurrentTargetGammaLinear(settings.appGamma(activeApp).linear);
-    setCurrentTargetGammaRed(settings.appGamma(activeApp).gainR);
-    setCurrentTargetGammaGreen(settings.appGamma(activeApp).gainG);
-    setCurrentTargetGammaBlue(settings.appGamma(activeApp).gainB);
-
-    setCurrentHasExternalDisplay(externalDisplayState.current);
+    setCurrentTargetSaturation(settings.appSaturation(activeApp, external));
+    setCurrentTargetGammaLinear(settings.appGamma(activeApp, external).linear);
+    setCurrentTargetGammaRed(settings.appGamma(activeApp, external).gainR);
+    setCurrentTargetGammaGreen(settings.appGamma(activeApp, external).gainG);
+    setCurrentTargetGammaBlue(settings.appGamma(activeApp, external).gainB);
 
     setInitialized(true);
   };
@@ -110,8 +108,10 @@ const Content: VFC<{
       console.log(`Setting global to saturation ${currentTargetSaturation}`);
       activeApp = DEFAULT_APP;
     }
-    settings.ensureApp(activeApp).saturation = currentTargetSaturation;
-    applyFn(RunningApps.active());
+
+    settings.ensureApp(activeApp, currentHasExternalDisplay).saturation = currentTargetSaturation;
+    
+    applyFn(RunningApps.active(), currentHasExternalDisplay);
 
     saveSettingsToLocalStorage(settings);
   }, [currentTargetSaturation, currentEnabled, initialized]);
@@ -134,13 +134,14 @@ const Content: VFC<{
       );
       activeApp = DEFAULT_APP;
     }
-    settings.ensureApp(activeApp).ensureGamma().linear =
-      currentTargetGammaLinear;
-    settings.ensureApp(activeApp).ensureGamma().gainR = currentTargetGammaRed;
-    settings.ensureApp(activeApp).ensureGamma().gainG = currentTargetGammaGreen;
-    settings.ensureApp(activeApp).ensureGamma().gainB = currentTargetGammaBlue;
+
+    const gamma =  settings.ensureApp(activeApp, currentHasExternalDisplay).ensureGamma();
+    gamma.linear = currentTargetGammaLinear;
+    gamma.gainR = currentTargetGammaRed;
+    gamma.gainG = currentTargetGammaGreen;
+    gamma.gainB = currentTargetGammaBlue;
     settings.advancedSettingsUI = currentAdvancedSettings;
-    applyFn(RunningApps.active());
+    applyFn(RunningApps.active(), currentHasExternalDisplay);
 
     saveSettingsToLocalStorage(settings);
   }, [
@@ -162,13 +163,15 @@ const Content: VFC<{
     console.log(`Setting app ${activeApp} to override ${currentAppOverride}`);
 
     if (!currentAppOverride) {
-      settings.ensureApp(activeApp).saturation = undefined;
-      settings.ensureApp(activeApp).gamma = undefined;
-      setCurrentTargetSaturation(settings.appSaturation(DEFAULT_APP));
-      setCurrentTargetGammaLinear(settings.appGamma(DEFAULT_APP).linear);
-      setCurrentTargetGammaRed(settings.appGamma(DEFAULT_APP).gainR);
-      setCurrentTargetGammaGreen(settings.appGamma(DEFAULT_APP).gainG);
-      setCurrentTargetGammaBlue(settings.appGamma(DEFAULT_APP).gainB);
+      settings.ensureApp(activeApp, false).saturation = undefined;
+      settings.ensureApp(activeApp, false).gamma = undefined;
+      settings.ensureApp(activeApp, true).saturation = undefined;
+      settings.ensureApp(activeApp, true).gamma = undefined;
+      setCurrentTargetSaturation(settings.appSaturation(DEFAULT_APP, currentHasExternalDisplay));
+      setCurrentTargetGammaLinear(settings.appGamma(DEFAULT_APP, currentHasExternalDisplay).linear);
+      setCurrentTargetGammaRed(settings.appGamma(DEFAULT_APP, currentHasExternalDisplay).gainR);
+      setCurrentTargetGammaGreen(settings.appGamma(DEFAULT_APP, currentHasExternalDisplay).gainG);
+      setCurrentTargetGammaBlue(settings.appGamma(DEFAULT_APP, currentHasExternalDisplay).gainB);
     }
     saveSettingsToLocalStorage(settings);
   }, [currentAppOverride, currentEnabled, initialized]);
@@ -176,41 +179,31 @@ const Content: VFC<{
   useEffect(() => {
     if (!initialized) return;
 
-    listenModeFn(currentEnabled);
+    listenModeFn(currentEnabled || settings.getEnabled(!currentHasExternalDisplay));
 
     if (!currentEnabled) resetFn();
 
-    settings.enabled = currentEnabled;
+    settings.setEnabled(currentHasExternalDisplay, currentEnabled);
     saveSettingsToLocalStorage(settings);
   }, [currentEnabled, initialized]);
 
   useEffect(() => {
     if (!initialized) return;
-    externalDisplayState.listenChange((newValue) => {setCurrentHasExternalDisplay(newValue);})
+    externalDisplayState.listenChange((newValue) => {
+      setCurrentHasExternalDisplay(newValue);
+      refresh();
+    })
   }, [initialized, externalDisplayState]);
 
   useEffect(() => {
     refresh();
   }, []);
 
-  const displayList = externalDisplayState.displays().map((v) => <Field label={v}></Field>);
-
   return (
     <div>
-      <PanelSection title="General">
-        <Field
-          label={
-            currentHasExternalDisplay ? "External display" : "Internal display"
-          }
-        ></Field>
-        <Button
-          onClick={() => {
-            setCurrentHasExternalDisplay(externalDisplayState.current);
-          }}
-        >
-          Refresh
-        </Button>
-        {displayList}
+      <PanelSection title={
+            currentHasExternalDisplay ? "External Display" : "Internal Display"
+          }>
         <PanelSectionRow>
           <ToggleField
             label="Enable color settings"
@@ -366,10 +359,10 @@ export default definePlugin((serverAPI: ServerAPI) => {
   const runningApps = new RunningApps();
   const externalDisplayState = new ExternalDisplayState(backend);
 
-  const applySettings = (appId: string) => {
-    const saturation = settings.appSaturation(appId);
+  const applySettings = (appId: string, external: boolean) => {
+    const saturation = settings.appSaturation(appId, external);
     backend.applySaturation(saturation);
-    const gamma = settings.appGamma(appId);
+    const gamma = settings.appGamma(appId, external);
     backend.applyGamma(gamma);
   };
 
@@ -393,12 +386,13 @@ export default definePlugin((serverAPI: ServerAPI) => {
   };
 
   // apply initially
-  if (settings.enabled) {
-    applySettings(RunningApps.active());
+  if (settings.getEnabled(externalDisplayState.current())) {
+    applySettings(RunningApps.active(), externalDisplayState.current());
   }
 
-  runningApps.listenActiveChange(() => applySettings(RunningApps.active()));
-  listenForChanges(settings.enabled);
+  runningApps.listenActiveChange(() => applySettings(RunningApps.active(), externalDisplayState.current()));
+  externalDisplayState.listenChange(() => applySettings(RunningApps.active(), externalDisplayState.current()));
+  listenForChanges(settings.getEnabled(true) || settings.getEnabled(false));
 
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
