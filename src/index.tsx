@@ -241,6 +241,7 @@ const Content: VFC<{
               step={1}
               max={400}
               min={0}
+              resetValue={100}
               showValue={true}
               onChange={(saturation: number) => {
                 setCurrentTargetSaturation(saturation);
