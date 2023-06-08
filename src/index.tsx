@@ -374,7 +374,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
     backend.applyGamma(new GammaSetting());
   };
 
-  const listenForChanges = (enabled: boolean) => {
+  const listenForRunningApps = (enabled: boolean) => {
     if (enabled) {
       console.log("Listening for actively running apps");
       runningApps.register();
@@ -393,7 +393,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
 
   runningApps.listenActiveChange(() => applySettings(RunningApps.active(), externalDisplayState.current()));
   externalDisplayState.listenChange(() => applySettings(RunningApps.active(), externalDisplayState.current()));
-  listenForChanges(settings.getEnabled(true) || settings.getEnabled(false));
+  listenForRunningApps(settings.getEnabled(true) || settings.getEnabled(false));
 
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
@@ -401,7 +401,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
       <Content
         applyFn={applySettings}
         resetFn={resetSettings}
-        listenModeFn={listenForChanges}
+        listenModeFn={listenForRunningApps}
         externalDisplayState={externalDisplayState}
       />
     ),
