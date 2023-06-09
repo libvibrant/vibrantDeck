@@ -88,16 +88,24 @@ export class ExternalDisplayState {
     });
   }
 
-  register() {
+  private register(intervalms: number) {
     if (this.intervalId == undefined)
-    this.intervalId = setInterval(() => this.pollActive(), 3000);
+    this.intervalId = setInterval(() => this.pollActive(), intervalms);
   }
 
-  unregister() {
+  private unregister() {
     if (this.intervalId != undefined) clearInterval(this.intervalId);
     this.intervalId = undefined;
   }
 
+  setListeningMode(setingsEnabled: boolean, panelVisible: boolean) {
+    if (setingsEnabled || panelVisible) {
+      this.register(panelVisible ? 1000 : 3000);
+    } else {
+      this.unregister();
+    }
+  }
+  
   listenChange(fn: ExternalDisplayStatusChangedHandler): UnregisterFn {
     const idx = this.listeners.push(fn) - 1;
     return () => {

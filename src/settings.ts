@@ -61,13 +61,15 @@ export class Settings {
     return appDict[appId];
   }
 
-  getEnabled(external: boolean): boolean {
-    // app saturation or global saturation or fallback 100
+  getEnabledFor(external: boolean): boolean {
     return external ? this.externalEnabled : this.enabled;
   }
 
-  setEnabled(external: boolean, value: boolean) {
-    // app saturation or global saturation or fallback 100
+  getEnabled(): boolean {
+    return this.externalEnabled || this.enabled;
+  }
+
+  setEnabledFor(external: boolean, value: boolean) {
     if (external) {
       this.externalEnabled = value;
     } else {
