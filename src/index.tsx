@@ -69,14 +69,14 @@ const Content: VFC<{
     useState<number>(100);
   const [currentTargetGammaBlue, setCurrentTargetGammaBlue] =
     useState<number>(100);
-  const [currentHasExternalDisplay, setCurrentHasExternalDisplay] =
+  const [currentIsExternalDisplay, setCurrentIsExternalDisplay] =
     useState<boolean>(false);
 
   const refresh = () => {
     // prevent updates while we are reloading
     setInitialized(false);
     const isExternalDisplay = externalDisplayState.current();
-    setCurrentHasExternalDisplay(isExternalDisplay);
+    setCurrentIsExternalDisplay(isExternalDisplay);
     setCurrentEnabled(settings.getEnabledFor(isExternalDisplay));
     setCurrentAdvancedSettings(settings.advancedSettingsUI);
 
@@ -121,10 +121,10 @@ const Content: VFC<{
       activeApp = DEFAULT_APP;
     }
 
-    settings.ensureApp(activeApp, currentHasExternalDisplay).saturation =
+    settings.ensureApp(activeApp, currentIsExternalDisplay).saturation =
       currentTargetSaturation;
 
-    applyFn(RunningApps.active(), currentHasExternalDisplay);
+    applyFn(RunningApps.active(), currentIsExternalDisplay);
 
     saveSettingsToLocalStorage(settings);
   }, [currentTargetSaturation, currentEnabled, initialized]);
@@ -149,14 +149,14 @@ const Content: VFC<{
     }
 
     const gamma = settings
-      .ensureApp(activeApp, currentHasExternalDisplay)
+      .ensureApp(activeApp, currentIsExternalDisplay)
       .ensureGamma();
     gamma.linear = currentTargetGammaLinear;
     gamma.gainR = currentTargetGammaRed;
     gamma.gainG = currentTargetGammaGreen;
     gamma.gainB = currentTargetGammaBlue;
     settings.advancedSettingsUI = currentAdvancedSettings;
-    applyFn(RunningApps.active(), currentHasExternalDisplay);
+    applyFn(RunningApps.active(), currentIsExternalDisplay);
 
     saveSettingsToLocalStorage(settings);
   }, [
@@ -183,19 +183,19 @@ const Content: VFC<{
       settings.ensureApp(activeApp, true).saturation = undefined;
       settings.ensureApp(activeApp, true).gamma = undefined;
       setCurrentTargetSaturation(
-        settings.appSaturation(DEFAULT_APP, currentHasExternalDisplay)
+        settings.appSaturation(DEFAULT_APP, currentIsExternalDisplay)
       );
       setCurrentTargetGammaLinear(
-        settings.appGamma(DEFAULT_APP, currentHasExternalDisplay).linear
+        settings.appGamma(DEFAULT_APP, currentIsExternalDisplay).linear
       );
       setCurrentTargetGammaRed(
-        settings.appGamma(DEFAULT_APP, currentHasExternalDisplay).gainR
+        settings.appGamma(DEFAULT_APP, currentIsExternalDisplay).gainR
       );
       setCurrentTargetGammaGreen(
-        settings.appGamma(DEFAULT_APP, currentHasExternalDisplay).gainG
+        settings.appGamma(DEFAULT_APP, currentIsExternalDisplay).gainG
       );
       setCurrentTargetGammaBlue(
-        settings.appGamma(DEFAULT_APP, currentHasExternalDisplay).gainB
+        settings.appGamma(DEFAULT_APP, currentIsExternalDisplay).gainB
       );
     }
     saveSettingsToLocalStorage(settings);
@@ -205,20 +205,19 @@ const Content: VFC<{
     if (!initialized) return;
 
     listenModeFn(
-      currentEnabled || settings.getEnabledFor(!currentHasExternalDisplay)
+      currentEnabled || settings.getEnabledFor(!currentIsExternalDisplay)
     );
 
     if (!currentEnabled) resetFn();
 
-    settings.setEnabledFor(currentHasExternalDisplay, currentEnabled);
+    settings.setEnabledFor(currentIsExternalDisplay, currentEnabled);
     saveSettingsToLocalStorage(settings);
   }, [currentEnabled, initialized]);
 
   useEffect(() => {
     if (!initialized) return;
     externalDisplayState.listenChange((newValue) => {
-      setCurrentHasExternalDisplay(newValue);
-      refresh();
+      setCurrentIsExternalDisplay(newValue);
     });
     externalDisplayState.setListeningMode(settings.getEnabled(), true);
     return () => {
@@ -228,13 +227,13 @@ const Content: VFC<{
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [currentIsExternalDisplay]);
 
   return (
     <div>
       <PanelSection
         title={
-          currentHasExternalDisplay ? "External Display" : "Internal Display"
+          currentIsExternalDisplay ? "External Display" : "Internal Display"
         }
       >
         <PanelSectionRow>

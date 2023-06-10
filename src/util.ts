@@ -101,8 +101,10 @@ export class ExternalDisplayState {
   setListeningMode(setingsEnabled: boolean, panelVisible: boolean) {
     if (setingsEnabled || panelVisible) {
       this.register(panelVisible ? 1000 : 3000);
+      this.backend.toast(panelVisible ? "Monitoring displays" : "Monitoring displays in the background");
     } else {
       this.unregister();
+      this.backend.toast("Stopped monitoring displays");
     }
   }
   
@@ -185,5 +187,9 @@ export class Backend {
       "get_displays",
       undefined
     );
+  }
+
+  toast(message: string) {
+    this.serverAPI.toaster.toast({title: "vibrantDeck", body: message, showToast: true, duration: 1500});
   }
 }
