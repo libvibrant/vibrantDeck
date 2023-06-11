@@ -24,6 +24,7 @@ import subprocess
 from typing import List, Iterable
 
 CTM_PROP = "GAMESCOPE_COLOR_MATRIX"
+CTMEXT_PROP = "GAMESCOPE_COLOR_MATRIX_EXTERNAL"
 GAMMA_LGAIN_BLEND_PROP = "GAMESCOPE_COLOR_LINEARGAIN_BLEND"
 GAMMA_LGAIN_PROP = "GAMESCOPE_COLOR_LINEARGAIN"
 GAMMA_GAIN_PROP = "GAMESCOPE_COLOR_GAIN"
@@ -65,7 +66,7 @@ def set_cardinal_prop(prop_name: str, values: Iterable[int]):
 
 class Plugin:
 
-    async def set_saturation(self, saturation: float):
+    async def set_saturation(self, saturation: float, external:bool):
         saturation = max(saturation, 0.0)
         saturation = min(saturation, 4.0)
 
@@ -75,7 +76,7 @@ class Plugin:
         # represent floats as longs
         long_coeffs = map(float_to_long, coeffs)
 
-        return set_cardinal_prop(CTM_PROP, long_coeffs)
+        return set_cardinal_prop(CTMEXT_PROP if external else CTM_PROP, long_coeffs)
 
     # values = 3 floats, R, G and B values respectively
     async def set_gamma_linear_gain(self, values: List[float]):

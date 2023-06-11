@@ -3,6 +3,7 @@ import { GammaSetting } from "./settings";
 
 interface SaturationArgs {
   saturation: number;
+  external: boolean;
 }
 interface GammaGainArgs {
   values: number[];
@@ -131,10 +132,11 @@ export class Backend {
     this.serverAPI = serverAPI;
   }
 
-  applySaturation(saturation: number) {
+  applySaturation(saturation: number, external: boolean) {
     console.log("Applying saturation " + saturation.toString());
     this.serverAPI.callPluginMethod<SaturationArgs, boolean>("set_saturation", {
       saturation: saturation / 100.0,
+      external: external,
     });
   }
 

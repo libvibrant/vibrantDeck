@@ -395,7 +395,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
 
   const applySettings = (appId: string, isExternalDisplay: boolean) => {
     const saturation = settings.appSaturation(appId, isExternalDisplay);
-    backend.applySaturation(saturation);
+    backend.applySaturation(saturation, isExternalDisplay);
     const gamma = settings.appGamma(appId, isExternalDisplay);
     backend.applyGamma(gamma);
   };
@@ -403,7 +403,8 @@ export default definePlugin((serverAPI: ServerAPI) => {
   const resetSettings = () => {
     // NOTE: This code ignores night mode as we don't have a good way to interface with it.
     console.log("Resetting color values to defaults");
-    backend.applySaturation(100);
+    backend.applySaturation(100, false);
+    backend.applySaturation(100, true);
     backend.applyGamma(new GammaSetting());
   };
 
