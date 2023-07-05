@@ -1,8 +1,9 @@
-import { Router, ServerAPI } from "decky-frontend-lib";
+import { Router, ServerAPI, ServerResponse } from "decky-frontend-lib";
 import { GammaSetting } from "./settings";
 
 interface SaturationArgs {
   saturation: number;
+  external: boolean;
 }
 interface GammaGainArgs {
   values: number[];
@@ -12,6 +13,9 @@ interface GammaBlendArgs {
 }
 
 type ActiveAppChangedHandler = (newAppId: string, oldAppId: string) => void;
+type ExternalDisplayStatusChangedHandler = (
+  newExternalDisplayConnected: boolean
+) => void;
 type UnregisterFn = () => void;
 
 export const DEFAULT_APP = "0";
@@ -51,6 +55,76 @@ export class RunningApps {
   }
 }
 
+export class ExternalDisplayState {
+  private backend: Backend;
+  private listeners: ExternalDisplayStatusChangedHandler[] = [];
+  private lastConnectedState: boolean = false;
+  private static currentConnectedState: boolean = false;
+  private static connectedDisplays: Array<string> = [];
+  private intervalId: any;
+
+  constructor(backend: Backend) {
+    this.backend = backend;
+  }
+
+  private pollActive() {
+    if (
+      ExternalDisplayState.currentConnectedState !=
+      this.lastConnectedState
+    ) {
+      this.listeners.forEach((h) =>
+        h(ExternalDisplayState.currentConnectedState)
+      );
+    }
+    this.lastConnectedState =
+    ExternalDisplayState.currentConnectedState;
+      this.backend.getDisplays().then((value: ServerResponse<Array<string>>) => {
+      if (value.success && value.result.length > 0) {
+        ExternalDisplayState.connectedDisplays = value.result;
+        ExternalDisplayState.currentConnectedState = (value.result.length > 1);
+      } else {
+        ExternalDisplayState.connectedDisplays = ["Err "+value.result];
+        ExternalDisplayState.currentConnectedState = false;
+      }
+    });
+  }
+
+  private register(intervalms: number) {
+    if (this.intervalId == undefined)
+    this.intervalId = setInterval(() => this.pollActive(), intervalms);
+  }
+
+  private unregister() {
+    if (this.intervalId != undefined) clearInterval(this.intervalId);
+    this.intervalId = undefined;
+  }
+
+  setListeningMode(setingsEnabled: boolean, panelVisible: boolean) {
+    if (setingsEnabled || panelVisible) {
+      this.register(panelVisible ? 1000 : 3000);
+      this.backend.toast(panelVisible ? "Monitoring displays" : "Monitoring displays in the background");
+    } else {
+      this.unregister();
+      this.backend.toast("Stopped monitoring displays");
+    }
+  }
+  
+  listenChange(fn: ExternalDisplayStatusChangedHandler): UnregisterFn {
+    const idx = this.listeners.push(fn) - 1;
+    return () => {
+      this.listeners.splice(idx, 1);
+    };
+  }
+
+  current() {
+    return ExternalDisplayState.currentConnectedState;
+  }
+
+  displays() {
+    return ExternalDisplayState.connectedDisplays;
+  }
+}
+
 export class Backend {
   private serverAPI: ServerAPI;
 
@@ -58,10 +132,11 @@ export class Backend {
     this.serverAPI = serverAPI;
   }
 
-  applySaturation(saturation: number) {
+  applySaturation(saturation: number, external: boolean) {
     console.log("Applying saturation " + saturation.toString());
     this.serverAPI.callPluginMethod<SaturationArgs, boolean>("set_saturation", {
       saturation: saturation / 100.0,
+      external: external,
     });
   }
 
@@ -107,5 +182,16 @@ export class Backend {
         { value: 0.0 }
       );
     }
+  }
+
+  getDisplays() {
+    return this.serverAPI.callPluginMethod<void, Array<string>>(
+      "get_displays",
+      undefined
+    );
+  }
+
+  toast(message: string) {
+    this.serverAPI.toaster.toast({title: "vibrantDeck", body: message, showToast: true, duration: 1500});
   }
 }

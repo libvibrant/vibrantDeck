@@ -43,34 +43,56 @@ export class AppSetting {
 @JsonObject()
 export class Settings {
   @JsonProperty()
-  enabled: boolean = true;
+  private enabled: boolean = true;
   @JsonProperty({ dataStructure: "dictionary", type: AppSetting })
   perApp: { [appId: string]: AppSetting } = {};
   @JsonProperty()
   advancedSettingsUI: boolean = true;
+  @JsonProperty()
+  externalEnabled: boolean = false;
+  @JsonProperty({ dataStructure: "dictionary", type: AppSetting })
+  externalPerApp: { [appId: string]: AppSetting } = {};
 
-  ensureApp(appId: string): AppSetting {
-    if (!(appId in this.perApp)) {
-      this.perApp[appId] = new AppSetting();
+  ensureApp(appId: string, external: boolean): AppSetting {
+    const appDict = external ? this.externalPerApp : this.perApp;
+    if (!(appId in appDict)) {
+      appDict[appId] = new AppSetting();
     }
-    return this.perApp[appId];
+    return appDict[appId];
   }
 
-  appSaturation(appId: string): number {
+  getEnabledFor(external: boolean): boolean {
+    return external ? this.externalEnabled : this.enabled;
+  }
+
+  getEnabled(): boolean {
+    return this.externalEnabled || this.enabled;
+  }
+
+  setEnabledFor(external: boolean, value: boolean) {
+    if (external) {
+      this.externalEnabled = value;
+    } else {
+      this.enabled = value;
+    }
+  }
+
+  appSaturation(appId: string, external: boolean): number {
     // app saturation or global saturation or fallback 100
-    if (this.perApp[appId]?.saturation != undefined)
-      return this.perApp[appId].saturation!!;
-    if (this.perApp[DEFAULT_APP]?.saturation != undefined)
-      return this.perApp[DEFAULT_APP].saturation!!;
+    const appDict = external ? this.externalPerApp : this.perApp;
+    if (appDict[appId]?.saturation != undefined)
+      return appDict[appId].saturation!!;
+    if (appDict[DEFAULT_APP]?.saturation != undefined)
+      return appDict[DEFAULT_APP].saturation!!;
     return 100;
   }
 
-  appGamma(appId: string) {
+  appGamma(appId: string, external: boolean) {
     // app gamma or global gamma or fallback to defaults
-    if (this.perApp[appId]?.gamma != undefined)
-      return this.perApp[appId].gamma!!;
-    if (this.perApp[DEFAULT_APP]?.gamma != undefined)
-      return this.perApp[DEFAULT_APP].gamma!!;
+    const appDict = external ? this.externalPerApp : this.perApp;
+    if (appDict[appId]?.gamma != undefined) return appDict[appId].gamma!!;
+    if (appDict[DEFAULT_APP]?.gamma != undefined)
+      return appDict[DEFAULT_APP].gamma!!;
     return new GammaSetting();
   }
 }

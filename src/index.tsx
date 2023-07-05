@@ -33,7 +33,12 @@ import {
   saveSettingsToLocalStorage,
   GammaSetting,
 } from "./settings";
-import { RunningApps, Backend, DEFAULT_APP } from "./util";
+import {
+  RunningApps,
+  Backend,
+  DEFAULT_APP,
+  ExternalDisplayState,
+} from "./util";
 
 // Appease TypeScript
 declare var SteamClient: any;
@@ -41,10 +46,11 @@ declare var SteamClient: any;
 let settings: Settings;
 
 const Content: VFC<{
-  applyFn: (appId: string) => void;
+  applyFn: (appId: string, isExternalDisplay: boolean) => void;
   resetFn: () => void;
   listenModeFn: (enabled: boolean) => void;
-}> = ({ applyFn, resetFn, listenModeFn }) => {
+  externalDisplayState: ExternalDisplayState;
+}> = ({ applyFn, resetFn, listenModeFn, externalDisplayState }) => {
   const [initialized, setInitialized] = useState<boolean>(false);
 
   const [currentEnabled, setCurrentEnabled] = useState<boolean>(true);
@@ -56,32 +62,48 @@ const Content: VFC<{
   const [currentTargetGammaLinear, setCurrentTargetGammaLinear] =
     useState<boolean>(true);
   const [currentAdvancedSettings, setCurrentAdvancedSettings] =
-    useState<boolean>(false);  
+    useState<boolean>(false);
   const [currentTargetGammaRed, setCurrentTargetGammaRed] =
     useState<number>(100);
   const [currentTargetGammaGreen, setCurrentTargetGammaGreen] =
     useState<number>(100);
   const [currentTargetGammaBlue, setCurrentTargetGammaBlue] =
     useState<number>(100);
+  const [currentIsExternalDisplay, setCurrentIsExternalDisplay] =
+    useState<boolean>(false);
 
   const refresh = () => {
     // prevent updates while we are reloading
     setInitialized(false);
-
-    setCurrentEnabled(settings.enabled);
+    const isExternalDisplay = externalDisplayState.current();
+    setCurrentIsExternalDisplay(isExternalDisplay);
+    setCurrentEnabled(settings.getEnabledFor(isExternalDisplay));
     setCurrentAdvancedSettings(settings.advancedSettingsUI);
 
     const activeApp = RunningApps.active();
+    const appDict = isExternalDisplay
+      ? settings.externalPerApp
+      : settings.perApp;
     // does active app have a saved setting
-    setCurrentAppOverride(settings.perApp[activeApp]?.hasSettings() || false);
+    setCurrentAppOverride(appDict[activeApp]?.hasSettings() || false);
     setCurrentAppOverridable(activeApp != DEFAULT_APP);
 
     // get configured saturation for current app (also Deck UI!)
-    setCurrentTargetSaturation(settings.appSaturation(activeApp));
-    setCurrentTargetGammaLinear(settings.appGamma(activeApp).linear);
-    setCurrentTargetGammaRed(settings.appGamma(activeApp).gainR);
-    setCurrentTargetGammaGreen(settings.appGamma(activeApp).gainG);
-    setCurrentTargetGammaBlue(settings.appGamma(activeApp).gainB);
+    setCurrentTargetSaturation(
+      settings.appSaturation(activeApp, isExternalDisplay)
+    );
+    setCurrentTargetGammaLinear(
+      settings.appGamma(activeApp, isExternalDisplay).linear
+    );
+    setCurrentTargetGammaRed(
+      settings.appGamma(activeApp, isExternalDisplay).gainR
+    );
+    setCurrentTargetGammaGreen(
+      settings.appGamma(activeApp, isExternalDisplay).gainG
+    );
+    setCurrentTargetGammaBlue(
+      settings.appGamma(activeApp, isExternalDisplay).gainB
+    );
 
     setInitialized(true);
   };
@@ -98,8 +120,11 @@ const Content: VFC<{
       console.log(`Setting global to saturation ${currentTargetSaturation}`);
       activeApp = DEFAULT_APP;
     }
-    settings.ensureApp(activeApp).saturation = currentTargetSaturation;
-    applyFn(RunningApps.active());
+
+    settings.ensureApp(activeApp, currentIsExternalDisplay).saturation =
+      currentTargetSaturation;
+
+    applyFn(RunningApps.active(), currentIsExternalDisplay);
 
     saveSettingsToLocalStorage(settings);
   }, [currentTargetSaturation, currentEnabled, initialized]);
@@ -122,13 +147,16 @@ const Content: VFC<{
       );
       activeApp = DEFAULT_APP;
     }
-    settings.ensureApp(activeApp).ensureGamma().linear =
-      currentTargetGammaLinear;
-    settings.ensureApp(activeApp).ensureGamma().gainR = currentTargetGammaRed;
-    settings.ensureApp(activeApp).ensureGamma().gainG = currentTargetGammaGreen;
-    settings.ensureApp(activeApp).ensureGamma().gainB = currentTargetGammaBlue;
+
+    const gamma = settings
+      .ensureApp(activeApp, currentIsExternalDisplay)
+      .ensureGamma();
+    gamma.linear = currentTargetGammaLinear;
+    gamma.gainR = currentTargetGammaRed;
+    gamma.gainG = currentTargetGammaGreen;
+    gamma.gainB = currentTargetGammaBlue;
     settings.advancedSettingsUI = currentAdvancedSettings;
-    applyFn(RunningApps.active());
+    applyFn(RunningApps.active(), currentIsExternalDisplay);
 
     saveSettingsToLocalStorage(settings);
   }, [
@@ -150,13 +178,25 @@ const Content: VFC<{
     console.log(`Setting app ${activeApp} to override ${currentAppOverride}`);
 
     if (!currentAppOverride) {
-      settings.ensureApp(activeApp).saturation = undefined;
-      settings.ensureApp(activeApp).gamma = undefined;
-      setCurrentTargetSaturation(settings.appSaturation(DEFAULT_APP));
-      setCurrentTargetGammaLinear(settings.appGamma(DEFAULT_APP).linear);
-      setCurrentTargetGammaRed(settings.appGamma(DEFAULT_APP).gainR);
-      setCurrentTargetGammaGreen(settings.appGamma(DEFAULT_APP).gainG);
-      setCurrentTargetGammaBlue(settings.appGamma(DEFAULT_APP).gainB);
+      settings.ensureApp(activeApp, false).saturation = undefined;
+      settings.ensureApp(activeApp, false).gamma = undefined;
+      settings.ensureApp(activeApp, true).saturation = undefined;
+      settings.ensureApp(activeApp, true).gamma = undefined;
+      setCurrentTargetSaturation(
+        settings.appSaturation(DEFAULT_APP, currentIsExternalDisplay)
+      );
+      setCurrentTargetGammaLinear(
+        settings.appGamma(DEFAULT_APP, currentIsExternalDisplay).linear
+      );
+      setCurrentTargetGammaRed(
+        settings.appGamma(DEFAULT_APP, currentIsExternalDisplay).gainR
+      );
+      setCurrentTargetGammaGreen(
+        settings.appGamma(DEFAULT_APP, currentIsExternalDisplay).gainG
+      );
+      setCurrentTargetGammaBlue(
+        settings.appGamma(DEFAULT_APP, currentIsExternalDisplay).gainB
+      );
     }
     saveSettingsToLocalStorage(settings);
   }, [currentAppOverride, currentEnabled, initialized]);
@@ -164,21 +204,38 @@ const Content: VFC<{
   useEffect(() => {
     if (!initialized) return;
 
-    listenModeFn(currentEnabled);
+    listenModeFn(
+      currentEnabled || settings.getEnabledFor(!currentIsExternalDisplay)
+    );
 
     if (!currentEnabled) resetFn();
 
-    settings.enabled = currentEnabled;
+    settings.setEnabledFor(currentIsExternalDisplay, currentEnabled);
     saveSettingsToLocalStorage(settings);
   }, [currentEnabled, initialized]);
 
   useEffect(() => {
+    if (!initialized) return;
+    externalDisplayState.listenChange((newValue) => {
+      setCurrentIsExternalDisplay(newValue);
+    });
+    externalDisplayState.setListeningMode(settings.getEnabled(), true);
+    return () => {
+      externalDisplayState.setListeningMode(settings.getEnabled(), false);
+    };
+  }, [initialized, externalDisplayState]);
+
+  useEffect(() => {
     refresh();
-  }, []);
+  }, [currentIsExternalDisplay]);
 
   return (
     <div>
-      <PanelSection title="General">
+      <PanelSection
+        title={
+          currentIsExternalDisplay ? "External Display" : "Internal Display"
+        }
+      >
         <PanelSectionRow>
           <ToggleField
             label="Enable color settings"
@@ -216,6 +273,7 @@ const Content: VFC<{
               step={1}
               max={400}
               min={0}
+              resetValue={100}
               showValue={true}
               onChange={(saturation: number) => {
                 setCurrentTargetSaturation(saturation);
@@ -244,76 +302,82 @@ const Content: VFC<{
               }}
             />
           </PanelSectionRow>
-          {!currentAdvancedSettings && <PanelSectionRow>
-            <SliderField
-              label="Gamma"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain`}
-              value={currentTargetGammaRed}
-              step={1}
-              max={900}
-              min={-50}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaRed(value);
-                setCurrentTargetGammaGreen(value);
-                setCurrentTargetGammaBlue(value);
-              }}
-            />
-          </PanelSectionRow>}
-          {currentAdvancedSettings && <div><PanelSectionRow>
-            <SliderField
-              label="Gamma Red"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain for red`}
-              value={currentTargetGammaRed}
-              step={1}
-              max={900}
-              min={-50}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaRed(value);
-              }}
-            />
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <SliderField
-              label="Gamma Green"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain for green´`}
-              value={currentTargetGammaGreen}
-              step={1}
-              max={900}
-              min={-50}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaGreen(value);
-              }}
-            />
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <SliderField
-              label="Gamma Blue"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain for blue`}
-              value={currentTargetGammaBlue}
-              step={1}
-              max={900}
-              min={-50}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaBlue(value);
-              }}
-            />
-          </PanelSectionRow></div>}
+          {!currentAdvancedSettings && (
+            <PanelSectionRow>
+              <SliderField
+                label="Gamma"
+                description={`Control${
+                  currentTargetGammaLinear ? " linear" : ""
+                } gamma gain`}
+                value={currentTargetGammaRed}
+                step={1}
+                max={900}
+                min={-50}
+                resetValue={100}
+                showValue={true}
+                onChange={(value: number) => {
+                  setCurrentTargetGammaRed(value);
+                  setCurrentTargetGammaGreen(value);
+                  setCurrentTargetGammaBlue(value);
+                }}
+              />
+            </PanelSectionRow>
+          )}
+          {currentAdvancedSettings && (
+            <div>
+              <PanelSectionRow>
+                <SliderField
+                  label="Gamma Red"
+                  description={`Control${
+                    currentTargetGammaLinear ? " linear" : ""
+                  } gamma gain for red`}
+                  value={currentTargetGammaRed}
+                  step={1}
+                  max={900}
+                  min={-50}
+                  resetValue={100}
+                  showValue={true}
+                  onChange={(value: number) => {
+                    setCurrentTargetGammaRed(value);
+                  }}
+                />
+              </PanelSectionRow>
+              <PanelSectionRow>
+                <SliderField
+                  label="Gamma Green"
+                  description={`Control${
+                    currentTargetGammaLinear ? " linear" : ""
+                  } gamma gain for green´`}
+                  value={currentTargetGammaGreen}
+                  step={1}
+                  max={900}
+                  min={-50}
+                  resetValue={100}
+                  showValue={true}
+                  onChange={(value: number) => {
+                    setCurrentTargetGammaGreen(value);
+                  }}
+                />
+              </PanelSectionRow>
+              <PanelSectionRow>
+                <SliderField
+                  label="Gamma Blue"
+                  description={`Control${
+                    currentTargetGammaLinear ? " linear" : ""
+                  } gamma gain for blue`}
+                  value={currentTargetGammaBlue}
+                  step={1}
+                  max={900}
+                  min={-50}
+                  resetValue={100}
+                  showValue={true}
+                  onChange={(value: number) => {
+                    setCurrentTargetGammaBlue(value);
+                  }}
+                />
+              </PanelSectionRow>
+            </div>
+          )}
         </PanelSection>
       )}
     </div>
@@ -326,18 +390,21 @@ export default definePlugin((serverAPI: ServerAPI) => {
 
   const backend = new Backend(serverAPI);
   const runningApps = new RunningApps();
+  const externalDisplayState = new ExternalDisplayState(backend);
+  const isExternalDisplay = externalDisplayState.current();
 
-  const applySettings = (appId: string) => {
-    const saturation = settings.appSaturation(appId);
-    backend.applySaturation(saturation);
-    const gamma = settings.appGamma(appId);
+  const applySettings = (appId: string, isExternalDisplay: boolean) => {
+    const saturation = settings.appSaturation(appId, isExternalDisplay);
+    backend.applySaturation(saturation, isExternalDisplay);
+    const gamma = settings.appGamma(appId, isExternalDisplay);
     backend.applyGamma(gamma);
   };
 
   const resetSettings = () => {
     // NOTE: This code ignores night mode as we don't have a good way to interface with it.
     console.log("Resetting color values to defaults");
-    backend.applySaturation(100);
+    backend.applySaturation(100, false);
+    backend.applySaturation(100, true);
     backend.applyGamma(new GammaSetting());
   };
 
@@ -352,12 +419,18 @@ export default definePlugin((serverAPI: ServerAPI) => {
   };
 
   // apply initially
-  if (settings.enabled) {
-    applySettings(RunningApps.active());
+  if (settings.getEnabledFor(isExternalDisplay)) {
+    applySettings(RunningApps.active(), isExternalDisplay);
   }
 
-  runningApps.listenActiveChange(() => applySettings(RunningApps.active()));
-  listenForRunningApps(settings.enabled);
+  runningApps.listenActiveChange(() =>
+    applySettings(RunningApps.active(), isExternalDisplay)
+  );
+  externalDisplayState.listenChange(() =>
+    applySettings(RunningApps.active(), isExternalDisplay)
+  );
+  listenForRunningApps(settings.getEnabled());
+  externalDisplayState.setListeningMode(settings.getEnabled(), false);
 
   return {
     title: <div className={staticClasses.Title}>vibrantDeck</div>,
@@ -366,11 +439,13 @@ export default definePlugin((serverAPI: ServerAPI) => {
         applyFn={applySettings}
         resetFn={resetSettings}
         listenModeFn={listenForRunningApps}
+        externalDisplayState={externalDisplayState}
       />
     ),
     icon: <FaEyeDropper />,
     onDismount() {
       runningApps.unregister();
+      externalDisplayState.setListeningMode(false, false);
       // reset color settings to default values
       resetSettings();
     },
