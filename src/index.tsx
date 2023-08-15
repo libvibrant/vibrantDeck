@@ -253,7 +253,7 @@ const Content: VFC<{
               value={currentTargetGammaRed}
               step={1}
               max={900}
-              min={-50}
+              min={5}
               resetValue={100}
               showValue={true}
               onChange={(value: number) => {
@@ -272,7 +272,7 @@ const Content: VFC<{
               value={currentTargetGammaRed}
               step={1}
               max={900}
-              min={-50}
+              min={5}
               resetValue={100}
               showValue={true}
               onChange={(value: number) => {
@@ -289,7 +289,7 @@ const Content: VFC<{
               value={currentTargetGammaGreen}
               step={1}
               max={900}
-              min={-50}
+              min={5}
               resetValue={100}
               showValue={true}
               onChange={(value: number) => {
@@ -306,7 +306,7 @@ const Content: VFC<{
               value={currentTargetGammaBlue}
               step={1}
               max={900}
-              min={-50}
+              min={5}
               resetValue={100}
               showValue={true}
               onChange={(value: number) => {
