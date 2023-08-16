@@ -30,7 +30,7 @@ devDependencies:
     version: 4.0.0(rollup@2.79.1)
   '@rollup/plugin-typescript':
     specifier: 8.5.0
-    version: 8.5.0(rollup@2.79.1)(tslib@2.5.3)(typescript@4.9.5)
+    version: 8.5.0(rollup@2.79.1)(tslib@2.6.1)(typescript@4.9.5)
   '@types/react':
     specifier: 16.14.43
     version: 16.14.43
@@ -47,8 +47,8 @@ devDependencies:
     specifier: 0.3.4
     version: 0.3.4
   tslib:
-    specifier: 2.5.3
-    version: 2.5.3
+    specifier: 2.6.1
+    version: 2.6.1
   typescript:
     specifier: 4.9.5
     version: 4.9.5
@@ -146,7 +146,7 @@ packages:
       rollup: 2.79.1
     dev: true
 
-  /@rollup/plugin-typescript@8.5.0(rollup@2.79.1)(tslib@2.5.3)(typescript@4.9.5):
+  /@rollup/plugin-typescript@8.5.0(rollup@2.79.1)(tslib@2.6.1)(typescript@4.9.5):
     resolution: {integrity: sha512-wMv1/scv0m/rXx21wD2IsBbJFba8wGF3ErJIr6IKRfRj49S85Lszbxb4DCo8iILpluTjk2GAAu9CoZt4G3ppgQ==}
     engines: {node: '>=8.0.0'}
     peerDependencies:
@@ -160,7 +160,7 @@ packages:
       '@rollup/pluginutils': 3.1.0(rollup@2.79.1)
       resolve: 1.22.2
       rollup: 2.79.1
-      tslib: 2.5.3
+      tslib: 2.6.1
       typescript: 4.9.5
     dev: true
 
@@ -865,14 +865,14 @@ packages:
       source-map-support: 0.5.21
     dev: true
 
-  /tslib@2.5.3:
-    resolution: {integrity: sha512-mSxlJJwl3BMEQCUNnxXBU9jP4JBktcEGhURcPR6VQVlnP0FdDEsIaz0C35dXNGLyRfrATNofF0F5p2KPxQgB+w==}
+  /tslib@2.6.1:
+    resolution: {integrity: sha512-t0hLfiEKfMUoqhG+U1oid7Pva4bbDPHYfJNiB7BiIjRkj1pyC++4N3huJfqY6aRH6VTB0rvtzQwjM4K6qpfOig==}
 
   /typescript-json-serializer@6.0.1:
     resolution: {integrity: sha512-95UQOeV3V+WIx5+7dBZd6/pN+cQSsGXxIdDvPmYhkHYH6VrIgQ3DK+IM3ixKVjFwvch8LnWhIY3F/Zhp4bNfSA==}
     dependencies:
       reflect-metadata: 0.1.13
-      tslib: 2.5.3
+      tslib: 2.6.1
     dev: false
 
   /typescript@4.9.5:
