@@ -35,8 +35,8 @@ devDependencies:
     specifier: 16.14.46
     version: 16.14.46
   '@types/webpack':
-    specifier: 5.28.1
-    version: 5.28.1
+    specifier: 5.28.2
+    version: 5.28.2
   rollup:
     specifier: 2.79.1
     version: 2.79.1
@@ -228,8 +228,8 @@ packages:
     resolution: {integrity: sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ==}
     dev: true
 
-  /@types/webpack@5.28.1:
-    resolution: {integrity: sha512-qw1MqGZclCoBrpiSe/hokSgQM/su8Ocpl3L/YHE0L6moyaypg4+5F7Uzq7NgaPKPxUxUbQ4fLPLpDWdR27bCZw==}
+  /@types/webpack@5.28.2:
+    resolution: {integrity: sha512-7tcxyrIOd7WGimZIcWU6pDsNh2edGGnwYExOvd3l/nMvuxqwVPrFXnnTbYCnplqV9BJoU7Mo2mfFtiH8CNFvYw==}
     dependencies:
       '@types/node': 20.3.1
       tapable: 2.2.1
