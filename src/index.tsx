@@ -31,12 +31,8 @@ import {
   loadSettingsFromLocalStorage,
   Settings,
   saveSettingsToLocalStorage,
-  GammaSetting,
 } from "./settings";
 import { RunningApps, Backend, DEFAULT_APP } from "./util";
-
-// Appease TypeScript
-declare var SteamClient: any;
 
 let settings: Settings;
 
@@ -51,17 +47,7 @@ const Content: VFC<{
   const [currentAppOverride, setCurrentAppOverride] = useState<boolean>(false);
   const [currentAppOverridable, setCurrentAppOverridable] =
     useState<boolean>(false);
-  const [currentTargetSaturation, setCurrentTargetSaturation] =
-    useState<number>(100);
-  const [currentTargetGammaLinear, setCurrentTargetGammaLinear] =
-    useState<boolean>(true);
-  const [currentAdvancedSettings, setCurrentAdvancedSettings] =
-    useState<boolean>(false);  
-  const [currentTargetGammaRed, setCurrentTargetGammaRed] =
-    useState<number>(100);
-  const [currentTargetGammaGreen, setCurrentTargetGammaGreen] =
-    useState<number>(100);
-  const [currentTargetGammaBlue, setCurrentTargetGammaBlue] =
+  const [currentTargetVibrancy, setCurrentTargetVibrancy] =
     useState<number>(100);
 
   const refresh = () => {
@@ -69,19 +55,14 @@ const Content: VFC<{
     setInitialized(false);
 
     setCurrentEnabled(settings.enabled);
-    setCurrentAdvancedSettings(settings.advancedSettingsUI);
 
     const activeApp = RunningApps.active();
     // does active app have a saved setting
     setCurrentAppOverride(settings.perApp[activeApp]?.hasSettings() || false);
     setCurrentAppOverridable(activeApp != DEFAULT_APP);
 
-    // get configured saturation for current app (also Deck UI!)
-    setCurrentTargetSaturation(settings.appSaturation(activeApp));
-    setCurrentTargetGammaLinear(settings.appGamma(activeApp).linear);
-    setCurrentTargetGammaRed(settings.appGamma(activeApp).gainR);
-    setCurrentTargetGammaGreen(settings.appGamma(activeApp).gainG);
-    setCurrentTargetGammaBlue(settings.appGamma(activeApp).gainB);
+    // get configured vibrancy for current app (also Deck UI!)
+    setCurrentTargetVibrancy(settings.appVibrancy(activeApp));
 
     setInitialized(true);
   };
@@ -92,54 +73,24 @@ const Content: VFC<{
     let activeApp = RunningApps.active();
     if (currentAppOverride && currentAppOverridable) {
       console.log(
-        `Setting app ${activeApp} to saturation ${currentTargetSaturation}`
+        `Setting app ${activeApp} to vibrancy ${currentTargetVibrancy}`,
       );
     } else {
-      console.log(`Setting global to saturation ${currentTargetSaturation}`);
+      console.log(`Setting global to vibrancy ${currentTargetVibrancy}`);
       activeApp = DEFAULT_APP;
     }
-    settings.ensureApp(activeApp).saturation = currentTargetSaturation;
+    settings.ensureApp(activeApp).vibrancy = currentTargetVibrancy;
     applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
-  }, [currentTargetSaturation, currentEnabled, initialized]);
+  }, [currentTargetVibrancy, currentEnabled, initialized]);
 
   useEffect(() => {
     if (!initialized || !currentEnabled) return;
-
-    let activeApp = RunningApps.active();
-    if (currentAppOverride && currentAppOverridable) {
-      console.log(
-        `Setting app ${activeApp} to${
-          currentTargetGammaLinear ? " linear" : ""
-        } gamma ${currentTargetGammaRed} ${currentTargetGammaGreen} ${currentTargetGammaBlue}`
-      );
-    } else {
-      console.log(
-        `Setting global to${
-          currentTargetGammaLinear ? " linear" : ""
-        } gamma ${currentTargetGammaRed} ${currentTargetGammaGreen} ${currentTargetGammaBlue}`
-      );
-      activeApp = DEFAULT_APP;
-    }
-    settings.ensureApp(activeApp).ensureGamma().linear =
-      currentTargetGammaLinear;
-    settings.ensureApp(activeApp).ensureGamma().gainR = currentTargetGammaRed;
-    settings.ensureApp(activeApp).ensureGamma().gainG = currentTargetGammaGreen;
-    settings.ensureApp(activeApp).ensureGamma().gainB = currentTargetGammaBlue;
-    settings.advancedSettingsUI = currentAdvancedSettings;
     applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
-  }, [
-    currentTargetGammaLinear,
-    currentTargetGammaRed,
-    currentTargetGammaGreen,
-    currentTargetGammaBlue,
-    currentEnabled,
-    currentAdvancedSettings,
-    initialized,
-  ]);
+  }, [currentEnabled, initialized]);
 
   useEffect(() => {
     if (!initialized || !currentEnabled) return;
@@ -150,13 +101,8 @@ const Content: VFC<{
     console.log(`Setting app ${activeApp} to override ${currentAppOverride}`);
 
     if (!currentAppOverride) {
-      settings.ensureApp(activeApp).saturation = undefined;
-      settings.ensureApp(activeApp).gamma = undefined;
-      setCurrentTargetSaturation(settings.appSaturation(DEFAULT_APP));
-      setCurrentTargetGammaLinear(settings.appGamma(DEFAULT_APP).linear);
-      setCurrentTargetGammaRed(settings.appGamma(DEFAULT_APP).gainR);
-      setCurrentTargetGammaGreen(settings.appGamma(DEFAULT_APP).gainG);
-      setCurrentTargetGammaBlue(settings.appGamma(DEFAULT_APP).gainB);
+      settings.ensureApp(activeApp).vibrancy = undefined;
+      setCurrentTargetVibrancy(settings.appVibrancy(DEFAULT_APP));
     }
     saveSettingsToLocalStorage(settings);
   }, [currentAppOverride, currentEnabled, initialized]);
@@ -210,110 +156,18 @@ const Content: VFC<{
           </PanelSectionRow>
           <PanelSectionRow>
             <SliderField
-              label="Saturation"
-              description="Control the saturation of the display"
-              value={currentTargetSaturation}
+              label="Vibrancy"
+              description="Control the vibrancy of the display"
+              value={currentTargetVibrancy}
               step={1}
-              max={400}
+              max={200}
               min={0}
               showValue={true}
-              onChange={(saturation: number) => {
-                setCurrentTargetSaturation(saturation);
+              onChange={(vibrancy: number) => {
+                setCurrentTargetVibrancy(vibrancy);
               }}
             />
           </PanelSectionRow>
-          <PanelSectionRow>
-            <ToggleField
-              label="Linear Gamma Gain"
-              description={"Use linear gamma scale"}
-              checked={currentTargetGammaLinear}
-              onChange={(linear) => {
-                setCurrentTargetGammaLinear(linear);
-              }}
-            />
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <ToggleField
-              label="Advanced Settings"
-              description={"Enable advanced settings"}
-              checked={currentAdvancedSettings}
-              onChange={(advancedSettings) => {
-                setCurrentTargetGammaGreen(currentTargetGammaRed);
-                setCurrentTargetGammaBlue(currentTargetGammaRed);
-                setCurrentAdvancedSettings(advancedSettings);
-              }}
-            />
-          </PanelSectionRow>
-          {!currentAdvancedSettings && <PanelSectionRow>
-            <SliderField
-              label="Gamma"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain`}
-              value={currentTargetGammaRed}
-              step={1}
-              max={900}
-              min={5}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaRed(value);
-                setCurrentTargetGammaGreen(value);
-                setCurrentTargetGammaBlue(value);
-              }}
-            />
-          </PanelSectionRow>}
-          {currentAdvancedSettings && <div><PanelSectionRow>
-            <SliderField
-              label="Gamma Red"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain for red`}
-              value={currentTargetGammaRed}
-              step={1}
-              max={900}
-              min={5}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaRed(value);
-              }}
-            />
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <SliderField
-              label="Gamma Green"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain for green´`}
-              value={currentTargetGammaGreen}
-              step={1}
-              max={900}
-              min={5}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaGreen(value);
-              }}
-            />
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <SliderField
-              label="Gamma Blue"
-              description={`Control${
-                currentTargetGammaLinear ? " linear" : ""
-              } gamma gain for blue`}
-              value={currentTargetGammaBlue}
-              step={1}
-              max={900}
-              min={5}
-              resetValue={100}
-              showValue={true}
-              onChange={(value: number) => {
-                setCurrentTargetGammaBlue(value);
-              }}
-            />
-          </PanelSectionRow></div>}
         </PanelSection>
       )}
     </div>
@@ -328,17 +182,14 @@ export default definePlugin((serverAPI: ServerAPI) => {
   const runningApps = new RunningApps();
 
   const applySettings = (appId: string) => {
-    const saturation = settings.appSaturation(appId);
-    backend.applySaturation(saturation);
-    const gamma = settings.appGamma(appId);
-    backend.applyGamma(gamma);
+    const vibrancy = settings.appVibrancy(appId);
+    backend.applyVibrancy(vibrancy);
   };
 
   const resetSettings = () => {
     // NOTE: This code ignores night mode as we don't have a good way to interface with it.
     console.log("Resetting color values to defaults");
-    backend.applySaturation(100);
-    backend.applyGamma(new GammaSetting());
+    backend.applyVibrancy(100);
   };
 
   const listenForRunningApps = (enabled: boolean) => {

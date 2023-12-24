@@ -5,37 +5,17 @@ import {
 } from "typescript-json-serializer";
 import { DEFAULT_APP } from "./util";
 
-const SETTINGS_KEY = "vibrantDeck";
+const SETTINGS_KEY = "vibrantDeck-v2";
 
 const serializer = new JsonSerializer();
 
 @JsonObject()
-export class GammaSetting {
-  @JsonProperty()
-  linear: boolean = true;
-  @JsonProperty()
-  gainR: number = 100;
-  @JsonProperty()
-  gainG: number = 100;
-  @JsonProperty()
-  gainB: number = 100;
-}
-
-@JsonObject()
 export class AppSetting {
   @JsonProperty()
-  saturation?: number;
-  @JsonProperty()
-  gamma?: GammaSetting;
-
-  ensureGamma(): GammaSetting {
-    if (this.gamma == undefined) this.gamma = new GammaSetting();
-    return this.gamma;
-  }
+  vibrancy?: number;
 
   hasSettings(): boolean {
-    if (this.saturation != undefined) return true;
-    if (this.gamma != undefined) return true;
+    if (this.vibrancy != undefined) return true;
     return false;
   }
 }
@@ -56,22 +36,13 @@ export class Settings {
     return this.perApp[appId];
   }
 
-  appSaturation(appId: string): number {
-    // app saturation or global saturation or fallback 100
-    if (this.perApp[appId]?.saturation != undefined)
-      return this.perApp[appId].saturation!!;
-    if (this.perApp[DEFAULT_APP]?.saturation != undefined)
-      return this.perApp[DEFAULT_APP].saturation!!;
+  appVibrancy(appId: string): number {
+    // app vibrancy or global saturation or fallback 100
+    if (this.perApp[appId]?.vibrancy != undefined)
+      return this.perApp[appId].vibrancy!!;
+    if (this.perApp[DEFAULT_APP]?.vibrancy != undefined)
+      return this.perApp[DEFAULT_APP].vibrancy!!;
     return 100;
-  }
-
-  appGamma(appId: string) {
-    // app gamma or global gamma or fallback to defaults
-    if (this.perApp[appId]?.gamma != undefined)
-      return this.perApp[appId].gamma!!;
-    if (this.perApp[DEFAULT_APP]?.gamma != undefined)
-      return this.perApp[DEFAULT_APP].gamma!!;
-    return new GammaSetting();
   }
 }
 
