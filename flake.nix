@@ -18,6 +18,7 @@
         checks = {
           pre-commit-check = pre-commit-hooks.lib.${system}.run {
             src = ./.;
+            excludes = [ "flake.lock" ];
             hooks = {
               nixfmt.enable = true;
               prettier.enable = true;
