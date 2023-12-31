@@ -1,14 +1,7 @@
 import { Router, ServerAPI } from "decky-frontend-lib";
-import { GammaSetting } from "./settings";
 
-interface SaturationArgs {
-  saturation: number;
-}
-interface GammaGainArgs {
-  values: number[];
-}
-interface GammaBlendArgs {
-  value: number;
+interface VibrancyArgs {
+  vibrancy: number;
 }
 
 type ActiveAppChangedHandler = (newAppId: string, oldAppId: string) => void;
@@ -58,54 +51,10 @@ export class Backend {
     this.serverAPI = serverAPI;
   }
 
-  applySaturation(saturation: number) {
-    console.log("Applying saturation " + saturation.toString());
-    this.serverAPI.callPluginMethod<SaturationArgs, boolean>("set_saturation", {
-      saturation: saturation / 100.0,
+  applyVibrancy(vibrancy: number) {
+    console.log("Applying vibrancy " + vibrancy.toString());
+    this.serverAPI.callPluginMethod<VibrancyArgs, boolean>("set_vibrancy", {
+      vibrancy: vibrancy / 200.0, // Gamescope wants 0.0..1.0, where 0.5 is sRGB, let's map our 0..200 to that
     });
-  }
-
-  applyGamma(gamma: GammaSetting) {
-    const defaults = new GammaSetting();
-    const default_values = [
-      defaults.gainR / 100.0,
-      defaults.gainG / 100.0,
-      defaults.gainB / 100.0,
-    ];
-    const values = [
-      gamma.gainR / 100.0,
-      gamma.gainG / 100.0,
-      gamma.gainB / 100.0,
-    ];
-    console.log(
-      `Applying gamma ${gamma.linear ? "linear" : ""} gain ${values.toString()}`
-    );
-    if (gamma.linear) {
-      this.serverAPI.callPluginMethod<GammaGainArgs, boolean>(
-        "set_gamma_gain",
-        { values: default_values }
-      );
-      this.serverAPI.callPluginMethod<GammaGainArgs, boolean>(
-        "set_gamma_linear_gain",
-        { values: values }
-      );
-      this.serverAPI.callPluginMethod<GammaBlendArgs, boolean>(
-        "set_gamma_linear_gain_blend",
-        { value: 1.0 }
-      );
-    } else {
-      this.serverAPI.callPluginMethod<GammaGainArgs, boolean>(
-        "set_gamma_gain",
-        { values: values }
-      );
-      this.serverAPI.callPluginMethod<GammaGainArgs, boolean>(
-        "set_gamma_linear_gain",
-        { values: default_values }
-      );
-      this.serverAPI.callPluginMethod<GammaBlendArgs, boolean>(
-        "set_gamma_linear_gain_blend",
-        { value: 0.0 }
-      );
-    }
   }
 }
