@@ -1,6 +1,6 @@
 {
   "name": "vibrant-deck",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Adjust color settings of your Deck",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
