@@ -20,6 +20,8 @@
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
+      inherit (pkgs) lib;
+
       decky-cli = pkgs.callPackage ./nix/decky-cli.nix {};
     in {
       checks = {
@@ -33,7 +35,13 @@
         };
       };
       devShells.default = pkgs.mkShell {
-        inherit (self.checks.${system}.pre-commit-check) shellHook;
+        shellHook = ''
+          ${self.checks.${system}.pre-commit-check.shellHook}
+
+          rootDir=$(git rev-parse --show-toplevel)
+          mkdir -p $rootDir/cli/
+          ln -sf ${lib.getExe decky-cli} $rootDir/cli/decky
+        '';
         packages = with pkgs; [nodejs_latest corepack_latest decky-cli];
       };
     });

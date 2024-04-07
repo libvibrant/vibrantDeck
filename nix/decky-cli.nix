@@ -30,4 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  meta = with lib; {
+    maintainers = with maintainers; [Scrumplex];
+    mainProgram = "decky";
+  };
 })
