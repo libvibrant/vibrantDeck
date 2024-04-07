@@ -29,8 +29,8 @@ devDependencies:
     specifier: 4.0.0
     version: 4.0.0(rollup@2.79.1)
   '@rollup/plugin-typescript':
-    specifier: 8.5.0
-    version: 8.5.0(rollup@2.79.1)(tslib@2.6.2)(typescript@4.9.5)
+    specifier: 11.1.6
+    version: 11.1.6(rollup@2.79.1)(tslib@2.6.2)(typescript@4.9.5)
   '@types/react':
     specifier: 16.14.60
     version: 16.14.60
@@ -146,18 +146,20 @@ packages:
       rollup: 2.79.1
     dev: true
 
-  /@rollup/plugin-typescript@8.5.0(rollup@2.79.1)(tslib@2.6.2)(typescript@4.9.5):
-    resolution: {integrity: sha512-wMv1/scv0m/rXx21wD2IsBbJFba8wGF3ErJIr6IKRfRj49S85Lszbxb4DCo8iILpluTjk2GAAu9CoZt4G3ppgQ==}
-    engines: {node: '>=8.0.0'}
+  /@rollup/plugin-typescript@11.1.6(rollup@2.79.1)(tslib@2.6.2)(typescript@4.9.5):
+    resolution: {integrity: sha512-R92yOmIACgYdJ7dJ97p4K69I8gg6IEHt8M7dUBxN3W6nrO8uUxX5ixl0yU/N3aZTi8WhPuICvOHXQvF6FaykAA==}
+    engines: {node: '>=14.0.0'}
     peerDependencies:
-      rollup: ^2.14.0
+      rollup: ^2.14.0||^3.0.0||^4.0.0
       tslib: '*'
       typescript: '>=3.7.0'
     peerDependenciesMeta:
+      rollup:
+        optional: true
       tslib:
         optional: true
     dependencies:
-      '@rollup/pluginutils': 3.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
       resolve: 1.22.2
       rollup: 2.79.1
       tslib: 2.6.2
@@ -172,6 +174,21 @@ packages:
     dependencies:
       '@types/estree': 0.0.39
       estree-walker: 1.0.1
+      picomatch: 2.3.1
+      rollup: 2.79.1
+    dev: true
+
+  /@rollup/pluginutils@5.1.0(rollup@2.79.1):
+    resolution: {integrity: sha512-XTIWOPPcpvyKI6L1NHo0lFlCyznUEyPmPY1mc3KpPVDYulHSTvyeLNVW00QTLIAFNhR3kYnJTQHeGqU4M3n09g==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      '@types/estree': 1.0.1
+      estree-walker: 2.0.2
       picomatch: 2.3.1
       rollup: 2.79.1
     dev: true
