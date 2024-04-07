@@ -9,8 +9,8 @@ dependencies:
     specifier: 3.25.0
     version: 3.25.0
   react-icons:
-    specifier: 4.11.0
-    version: 4.11.0
+    specifier: 4.12.0
+    version: 4.12.0
   typescript-json-serializer:
     specifier: 6.0.1
     version: 6.0.1
@@ -705,8 +705,8 @@ packages:
       safe-buffer: 5.2.1
     dev: true
 
-  /react-icons@4.11.0:
-    resolution: {integrity: sha512-V+4khzYcE5EBk/BvcuYRq6V/osf11ODUM2J8hg2FDSswRrGvqiYUYPRy4OdrWaQOBj4NcpJfmHZLNaD+VH0TyA==}
+  /react-icons@4.12.0:
+    resolution: {integrity: sha512-IBaDuHiShdZqmfc/TwHu6+d6k2ltNCf3AszxNmjJc1KUfXdEeRJOKyNvLmAHaarhzGmTSVygNdyu8/opXv2gaw==}
     peerDependencies:
       react: '*'
     peerDependenciesMeta:
