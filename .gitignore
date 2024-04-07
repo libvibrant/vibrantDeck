@@ -22,6 +22,7 @@ coverage
 # Dependency directory
 node_modules
 bower_components
+.pnpm-store
 
 # Editors
 .idea
@@ -41,6 +42,19 @@ yalc.lock
 
 .vscode/settings.json
 
-# Nix Flake
-.direnv
+# Ignore output folder
+
+backend/out
+
+# Make sure to ignore any instance of the loader's decky_plugin.py
+decky_plugin.py
+
+# Ignore decky CLI for building plugins
+out
+out/*
+cli/
+cli/*
+cli/decky
+
+.direnv/
 .pre-commit-config.yaml
