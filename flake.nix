@@ -18,7 +18,7 @@
         checks = {
           pre-commit-check = pre-commit-hooks.lib.${system}.run {
             src = ./.;
-            excludes = [ "flake.lock" ];
+            excludes = [ "flake.lock" "pnpm-lock.yaml" ];
             hooks = {
               nixfmt.enable = true;
               prettier.enable = true;
@@ -27,7 +27,7 @@
         };
         devShells.default = pkgs.mkShell {
           inherit (self.checks.${system}.pre-commit-check) shellHook;
-          packages = with pkgs; [ nodePackages.pnpm nodePackages.prettier ];
+          packages = with pkgs; [ nodejs_latest corepack_latest ];
         };
       });
 }
