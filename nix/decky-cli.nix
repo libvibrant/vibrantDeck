@@ -1,17 +1,23 @@
-{ lib, stdenv, fetchurl, autoPatchelfHook, libgcc, openssl }:
+{
+  lib,
+  stdenv,
+  fetchurl,
+  autoPatchelfHook,
+  libgcc,
+  openssl,
+}:
 stdenv.mkDerivation (finalAttrs: {
   pname = "decky-cli-bin";
   version = "0.0.2";
 
   src = fetchurl {
     name = "decky-cli-${finalAttrs.version}";
-    url =
-      "https://github.com/SteamDeckHomebrew/cli/releases/download/${finalAttrs.version}/decky-linux-x86_64";
+    url = "https://github.com/SteamDeckHomebrew/cli/releases/download/${finalAttrs.version}/decky-linux-x86_64";
     hash = "sha256-nomDValyO9JP06nWm0joSYZ86F757larll0jHqeMXjk=";
   };
 
-  nativeBuildInputs = [ autoPatchelfHook ];
-  buildInputs = [ openssl libgcc ];
+  nativeBuildInputs = [autoPatchelfHook];
+  buildInputs = [openssl libgcc];
 
   dontUnpack = true;
   dontConfigure = true;
