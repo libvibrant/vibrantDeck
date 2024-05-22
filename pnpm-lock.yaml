@@ -17,8 +17,8 @@ dependencies:
 
 devDependencies:
   '@rollup/plugin-commonjs':
-    specifier: 21.1.0
-    version: 21.1.0(rollup@2.79.1)
+    specifier: 25.0.8
+    version: 25.0.8(rollup@2.79.1)
   '@rollup/plugin-json':
     specifier: 4.1.0
     version: 4.1.0(rollup@2.79.1)
@@ -96,19 +96,21 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.14
     dev: true
 
-  /@rollup/plugin-commonjs@21.1.0(rollup@2.79.1):
-    resolution: {integrity: sha512-6ZtHx3VHIp2ReNNDxHjuUml6ur+WcQ28N1yHgCQwsbNkQg2suhxGMDQGJOn/KuDxKtd1xuZP5xSTwBA4GQ8hbA==}
-    engines: {node: '>= 8.0.0'}
+  /@rollup/plugin-commonjs@25.0.8(rollup@2.79.1):
+    resolution: {integrity: sha512-ZEZWTK5n6Qde0to4vS9Mr5x/0UZoqCxPVR9KRUjU4kA2sO7GEUn1fop0DAwpO6z0Nw/kJON9bDmSxdWxO/TT1A==}
+    engines: {node: '>=14.0.0'}
     peerDependencies:
-      rollup: ^2.38.3
+      rollup: ^2.68.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
     dependencies:
-      '@rollup/pluginutils': 3.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
       commondir: 1.0.1
       estree-walker: 2.0.2
-      glob: 7.2.3
+      glob: 8.1.0
       is-reference: 1.2.1
-      magic-string: 0.25.9
-      resolve: 1.22.2
+      magic-string: 0.30.10
       rollup: 2.79.1
     dev: true
 
@@ -172,6 +174,21 @@ packages:
     dependencies:
       '@types/estree': 0.0.39
       estree-walker: 1.0.1
+      picomatch: 2.3.1
+      rollup: 2.79.1
+    dev: true
+
+  /@rollup/pluginutils@5.1.0(rollup@2.79.1):
+    resolution: {integrity: sha512-XTIWOPPcpvyKI6L1NHo0lFlCyznUEyPmPY1mc3KpPVDYulHSTvyeLNVW00QTLIAFNhR3kYnJTQHeGqU4M3n09g==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      '@types/estree': 1.0.1
+      estree-walker: 2.0.2
       picomatch: 2.3.1
       rollup: 2.79.1
     dev: true
@@ -397,6 +414,12 @@ packages:
       concat-map: 0.0.1
     dev: true
 
+  /brace-expansion@2.0.1:
+    resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
+    dependencies:
+      balanced-match: 1.0.2
+    dev: true
+
   /browserslist@4.21.9:
     resolution: {integrity: sha512-M0MFoZzbUrRU4KNfCrDLnvyE7gub+peetoTid3TBIqtunaDJyXlwhakT+/VkvSXcfIzFfK/nkCs4nmyTmxdNSg==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
@@ -553,6 +576,17 @@ packages:
       path-is-absolute: 1.0.1
     dev: true
 
+  /glob@8.1.0:
+    resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      fs.realpath: 1.0.0
+      inflight: 1.0.6
+      inherits: 2.0.4
+      minimatch: 5.1.6
+      once: 1.4.0
+    dev: true
+
   /graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
     dev: true
@@ -636,6 +670,12 @@ packages:
       sourcemap-codec: 1.4.8
     dev: true
 
+  /magic-string@0.30.10:
+    resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.4.15
+    dev: true
+
   /merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
     dev: true
@@ -656,6 +696,13 @@ packages:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
     dependencies:
       brace-expansion: 1.1.11
+    dev: true
+
+  /minimatch@5.1.6:
+    resolution: {integrity: sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g==}
+    engines: {node: '>=10'}
+    dependencies:
+      brace-expansion: 2.0.1
     dev: true
 
   /minimist@1.2.8:
