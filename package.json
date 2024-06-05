@@ -30,7 +30,7 @@
     "@rollup/plugin-commonjs": "21.1.0",
     "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "13.3.0",
-    "@rollup/plugin-replace": "4.0.0",
+    "@rollup/plugin-replace": "5.0.7",
     "@rollup/plugin-typescript": "8.5.0",
     "@types/react": "16.14.60",
     "@types/webpack": "5.28.3",
