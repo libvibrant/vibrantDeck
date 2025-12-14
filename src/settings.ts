@@ -13,9 +13,18 @@ const serializer = new JsonSerializer();
 export class AppSetting {
   @JsonProperty()
   vibrancy?: number;
+  @JsonProperty()
+  brightness?: number;
+  @JsonProperty()
+  colorTemperature?: number;
+  @JsonProperty()
+  colorIntensity?: number;
 
   hasSettings(): boolean {
     if (this.vibrancy != undefined) return true;
+    if (this.brightness != undefined) return true;
+    if (this.colorTemperature != undefined) return true;
+    if (this.colorIntensity != undefined) return true;
     return false;
   }
 }
@@ -43,6 +52,33 @@ export class Settings {
     if (this.perApp[DEFAULT_APP]?.vibrancy != undefined)
       return this.perApp[DEFAULT_APP].vibrancy!!;
     return 100;
+  }
+
+  appBrightness(appId: string): number {
+    // app brightness or global brightness or fallback 100
+    if (this.perApp[appId]?.brightness != undefined)
+      return this.perApp[appId].brightness!!;
+    if (this.perApp[DEFAULT_APP]?.brightness != undefined)
+      return this.perApp[DEFAULT_APP].brightness!!;
+    return 100;
+  }
+
+  appColorTemperature(appId: string): number {
+    // app color temperature or global or fallback 0
+    if (this.perApp[appId]?.colorTemperature != undefined)
+      return this.perApp[appId].colorTemperature!!;
+    if (this.perApp[DEFAULT_APP]?.colorTemperature != undefined)
+      return this.perApp[DEFAULT_APP].colorTemperature!!;
+    return 0;
+  }
+
+  appColorIntensity(appId: string): number {
+    // app color intensity or global or fallback 0
+    if (this.perApp[appId]?.colorIntensity != undefined)
+      return this.perApp[appId].colorIntensity!!;
+    if (this.perApp[DEFAULT_APP]?.colorIntensity != undefined)
+      return this.perApp[DEFAULT_APP].colorIntensity!!;
+    return 0;
   }
 }
 

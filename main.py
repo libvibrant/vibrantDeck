@@ -24,6 +24,10 @@ from typing import Iterable
 
 # Takes 0.0..1.0, 0.5 being sRGB 0.5..1.0 being "boosted"
 SDR_GAMUT_PROP = "GAMESCOPE_COLOR_SDR_GAMUT_WIDENESS"
+# Brightness/exposure multiplier for SDR content
+SDR_INPUT_GAIN_PROP = "GAMESCOPE_SDR_INPUT_GAIN"
+# Night mode for color temperature control (3 floats: amount, hue, saturation)
+NIGHT_MODE_PROP = "GAMESCOPE_COLOR_NIGHT_MODE"
 
 
 def float_to_long(x: float) -> int:
@@ -80,3 +84,45 @@ class Plugin:
             return round(long_to_float(wideness_param), 2)
 
         return 1.0
+
+    async def set_brightness(self, brightness: float):
+        """
+        Set brightness/exposure multiplier using SDR input gain.
+        brightness: 0.5 to 2.0 (represents 50% to 200%)
+        """
+        brightness = max(brightness, 0.5)
+        brightness = min(brightness, 2.0)
+
+        return set_cardinal_prop(SDR_INPUT_GAIN_PROP, [float_to_long(brightness)])
+
+    async def set_color_temperature(self, temperature: int, intensity: float):
+        """
+        Set color temperature shift using night mode HSV transformation.
+        temperature: -100 to +100 (warm to cool)
+                    -100 = red/orange shift (warm)
+                    +100 = blue shift (cool)
+        intensity: 0.0 to 1.0 (effect strength/amount)
+        """
+        # Clamp temperature to valid range
+        temperature = max(-100, min(100, temperature))
+        
+        # Map temperature (-100 to +100) to hue rotation
+        # We use a smaller range to avoid extreme color shifts
+        # -100 = -0.083 (30° warm shift)
+        # +100 = +0.083 (30° cool shift)
+        hue = (temperature / 100.0) * 0.083
+        
+        # Clamp intensity
+        amount = max(0.0, min(1.0, intensity))
+        
+        # Saturation at 1.0 maintains color intensity during hue shift
+        saturation = 1.0
+        
+        # Night mode expects 3 floats: [amount, hue, saturation]
+        values = [
+            float_to_long(amount),
+            float_to_long(hue),
+            float_to_long(saturation)
+        ]
+        
+        return set_cardinal_prop(NIGHT_MODE_PROP, values)

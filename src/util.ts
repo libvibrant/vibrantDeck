@@ -4,6 +4,15 @@ interface VibrancyArgs {
   vibrancy: number;
 }
 
+interface BrightnessArgs {
+  brightness: number;
+}
+
+interface ColorTemperatureArgs {
+  temperature: number;
+  intensity: number;
+}
+
 type ActiveAppChangedHandler = (newAppId: string, oldAppId: string) => void;
 type UnregisterFn = () => void;
 
@@ -56,5 +65,25 @@ export class Backend {
     this.serverAPI.callPluginMethod<VibrancyArgs, boolean>("set_vibrancy", {
       vibrancy: vibrancy / 200.0, // Gamescope wants 0.0..1.0, where 0.5 is sRGB, let's map our 0..200 to that
     });
+  }
+
+  applyBrightness(brightness: number) {
+    console.log("Applying brightness " + brightness.toString());
+    this.serverAPI.callPluginMethod<BrightnessArgs, boolean>("set_brightness", {
+      brightness: brightness / 100.0, // Convert 50-200% to 0.5-2.0
+    });
+  }
+
+  applyColorTemperature(temperature: number, intensity: number) {
+    console.log(
+      `Applying color temperature ${temperature} with intensity ${intensity}`,
+    );
+    this.serverAPI.callPluginMethod<ColorTemperatureArgs, boolean>(
+      "set_color_temperature",
+      {
+        temperature: temperature, // -100 to +100
+        intensity: intensity / 100.0, // Convert 0-100% to 0.0-1.0
+      },
+    );
   }
 }

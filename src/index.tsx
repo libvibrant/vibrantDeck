@@ -49,6 +49,12 @@ const Content: VFC<{
     useState<boolean>(false);
   const [currentTargetVibrancy, setCurrentTargetVibrancy] =
     useState<number>(100);
+  const [currentTargetBrightness, setCurrentTargetBrightness] =
+    useState<number>(100);
+  const [currentTargetColorTemp, setCurrentTargetColorTemp] =
+    useState<number>(0);
+  const [currentTargetColorIntensity, setCurrentTargetColorIntensity] =
+    useState<number>(0);
 
   const refresh = () => {
     // prevent updates while we are reloading
@@ -61,8 +67,11 @@ const Content: VFC<{
     setCurrentAppOverride(settings.perApp[activeApp]?.hasSettings() || false);
     setCurrentAppOverridable(activeApp != DEFAULT_APP);
 
-    // get configured vibrancy for current app (also Deck UI!)
+    // get configured settings for current app (also Deck UI!)
     setCurrentTargetVibrancy(settings.appVibrancy(activeApp));
+    setCurrentTargetBrightness(settings.appBrightness(activeApp));
+    setCurrentTargetColorTemp(settings.appColorTemperature(activeApp));
+    setCurrentTargetColorIntensity(settings.appColorIntensity(activeApp));
 
     setInitialized(true);
   };
@@ -87,6 +96,50 @@ const Content: VFC<{
 
   useEffect(() => {
     if (!initialized || !currentEnabled) return;
+
+    let activeApp = RunningApps.active();
+    if (currentAppOverride && currentAppOverridable) {
+      console.log(
+        `Setting app ${activeApp} to brightness ${currentTargetBrightness}`,
+      );
+    } else {
+      console.log(`Setting global to brightness ${currentTargetBrightness}`);
+      activeApp = DEFAULT_APP;
+    }
+    settings.ensureApp(activeApp).brightness = currentTargetBrightness;
+    applyFn(RunningApps.active());
+
+    saveSettingsToLocalStorage(settings);
+  }, [currentTargetBrightness, currentEnabled, initialized]);
+
+  useEffect(() => {
+    if (!initialized || !currentEnabled) return;
+
+    let activeApp = RunningApps.active();
+    if (currentAppOverride && currentAppOverridable) {
+      console.log(
+        `Setting app ${activeApp} to color temp ${currentTargetColorTemp} intensity ${currentTargetColorIntensity}`,
+      );
+    } else {
+      console.log(
+        `Setting global to color temp ${currentTargetColorTemp} intensity ${currentTargetColorIntensity}`,
+      );
+      activeApp = DEFAULT_APP;
+    }
+    settings.ensureApp(activeApp).colorTemperature = currentTargetColorTemp;
+    settings.ensureApp(activeApp).colorIntensity = currentTargetColorIntensity;
+    applyFn(RunningApps.active());
+
+    saveSettingsToLocalStorage(settings);
+  }, [
+    currentTargetColorTemp,
+    currentTargetColorIntensity,
+    currentEnabled,
+    initialized,
+  ]);
+
+  useEffect(() => {
+    if (!initialized || !currentEnabled) return;
     applyFn(RunningApps.active());
 
     saveSettingsToLocalStorage(settings);
@@ -102,7 +155,13 @@ const Content: VFC<{
 
     if (!currentAppOverride) {
       settings.ensureApp(activeApp).vibrancy = undefined;
+      settings.ensureApp(activeApp).brightness = undefined;
+      settings.ensureApp(activeApp).colorTemperature = undefined;
+      settings.ensureApp(activeApp).colorIntensity = undefined;
       setCurrentTargetVibrancy(settings.appVibrancy(DEFAULT_APP));
+      setCurrentTargetBrightness(settings.appBrightness(DEFAULT_APP));
+      setCurrentTargetColorTemp(settings.appColorTemperature(DEFAULT_APP));
+      setCurrentTargetColorIntensity(settings.appColorIntensity(DEFAULT_APP));
     }
     saveSettingsToLocalStorage(settings);
   }, [currentAppOverride, currentEnabled, initialized]);
@@ -157,7 +216,7 @@ const Content: VFC<{
           <PanelSectionRow>
             <SliderField
               label="Vibrancy"
-              description="Control the vibrancy of the display"
+              description="Control the color saturation of the display"
               value={currentTargetVibrancy}
               step={1}
               max={200}
@@ -165,6 +224,55 @@ const Content: VFC<{
               showValue={true}
               onChange={(vibrancy: number) => {
                 setCurrentTargetVibrancy(vibrancy);
+              }}
+            />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <SliderField
+              label="Brightness"
+              description="Control the brightness/exposure of the display"
+              value={currentTargetBrightness}
+              step={1}
+              max={200}
+              min={50}
+              showValue={true}
+              onChange={(brightness: number) => {
+                setCurrentTargetBrightness(brightness);
+              }}
+            />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <SliderField
+              label="Color Temperature"
+              description="Shift colors warmer (negative) or cooler (positive)"
+              value={currentTargetColorTemp}
+              step={1}
+              max={100}
+              min={-100}
+              showValue={true}
+              valueSuffix={
+                currentTargetColorTemp < 0
+                  ? " (warm)"
+                  : currentTargetColorTemp > 0
+                    ? " (cool)"
+                    : ""
+              }
+              onChange={(temp: number) => {
+                setCurrentTargetColorTemp(temp);
+              }}
+            />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <SliderField
+              label="Color Intensity"
+              description="Control the strength of the color temperature effect"
+              value={currentTargetColorIntensity}
+              step={1}
+              max={100}
+              min={0}
+              showValue={true}
+              onChange={(intensity: number) => {
+                setCurrentTargetColorIntensity(intensity);
               }}
             />
           </PanelSectionRow>
@@ -183,13 +291,20 @@ export default definePlugin((serverAPI: ServerAPI) => {
 
   const applySettings = (appId: string) => {
     const vibrancy = settings.appVibrancy(appId);
+    const brightness = settings.appBrightness(appId);
+    const colorTemp = settings.appColorTemperature(appId);
+    const colorIntensity = settings.appColorIntensity(appId);
+
     backend.applyVibrancy(vibrancy);
+    backend.applyBrightness(brightness);
+    backend.applyColorTemperature(colorTemp, colorIntensity);
   };
 
   const resetSettings = () => {
-    // NOTE: This code ignores night mode as we don't have a good way to interface with it.
     console.log("Resetting color values to defaults");
     backend.applyVibrancy(100);
+    backend.applyBrightness(100);
+    backend.applyColorTemperature(0, 0);
   };
 
   const listenForRunningApps = (enabled: boolean) => {
